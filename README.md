@@ -1,29 +1,8 @@
-# Alone
+To Do: Get achievements awarded and retrieved from db
+1. After mini-game, add score to total
+2. Based on score, determine bronze,silver,gold
+3. Use medals to buy plants for garden
 
-This template should help get you started developing with Vue 3 in Vite.
-
-## Recommended IDE Setup
-
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Compile and Minify for Production
-
-```sh
-npm run build
-```
+Insert new background:
+INSERT INTO items (name, type, price_gold, price_silver, price_bronze, image_url)
+VALUES ('Swamp', 'background', 1, 0, 0, 'images/swamp.jpg');

@@ -1,5 +1,15 @@
 <template>
-  <div id="app" class="wordle-container">
+  <div v-if="!start" class="info-screen">
+    <div class="info-content">
+      <h2>Alpha Arena Rules</h2>
+      <p>Guess each letter of the word to win! Green= present + correct placement, yellow = present, red = wrong</p>
+      <p>Gold: All Words Guessed</p>
+      <p>Silver: 3 Words Guessed </p>
+      <p>Bronze: 2 Words Guessed</p>
+      <button @click="startGame" class="button-info">Start Game</button>
+    </div>
+  </div>
+  <div v-if="start" id="app" class="wordle-container">
     <h1 class="game-title">Alpha Arena</h1>
     <div v-if="showEnd" class="endMsg">
       <p>You have earned the {{ medal }} Medal!</p>
@@ -40,6 +50,7 @@ export default {
   },
   data() {
     return {
+      start: false,
       wordList: [],
       validWords: [],
       targetWord: "",
@@ -60,6 +71,9 @@ export default {
     this.fetchWords()
   },
   methods: {
+    startGame() {
+      this.start = true;
+    },
     async getDefinitionHint() {
       this.hint = "Fetching definition...";
       this.showHintModal = false;
@@ -94,7 +108,7 @@ export default {
         let silver = currentAchievements.silver;
         let gold = currentAchievements.gold;
 
-        if (this.score == 5) this.medal = "gold", gold += 1;
+        if (this.score >= 5) this.medal = "gold", gold += 1;
         else if (this.score >= 3) this.medal = "silver", silver += 1;
         else if (this.score >= 2) this.medal = "bronze", bronze += 1;
         console.log(this.score, this.medal)
@@ -283,7 +297,7 @@ export default {
           alert("You win!");
         } else if (this.guesses.length >= this.maxGuesses) {
           await this.updateAchievements()
-          showEnd = True
+          this.showEnd = true
           alert(`Game Over! The word was ${this.targetWord}`);
         }
 
@@ -311,6 +325,52 @@ export default {
   align-items: center;
   min-height: 80vh;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Info Screen Styles */
+.info-screen {
+  position: fixed;
+  top: 145px;
+  left: 0;
+  width: 100%;
+  height: 80%;
+  background-color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+  transition: opacity 0.5s ease;
+}
+h2 {
+  color: #007bff;
+}
+.info-content {
+  text-align: center;
+  max-width: 400px;
+}
+
+.info-content h2 {
+  font-size: 32px;
+  margin-bottom: 20px;
+}
+
+.info-content p {
+  font-size: 18px;
+  margin-bottom: 30px;
+}
+
+.button-info {
+  padding: 15px 30px;
+  background-color: #3498db;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.button-info:hover {
+  background-color: #2980b9;
 }
 
 .space {
@@ -444,5 +504,16 @@ button:active {
   border-left: 5px solid #4e54c8;
   font-size: 16px;
   max-width: 600px;
+}
+
+.game-over {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 24px;
+  font-weight: bold;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 20px;
+  border-radius: 10px;
 }
 </style>

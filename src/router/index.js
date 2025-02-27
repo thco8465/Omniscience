@@ -10,6 +10,7 @@ import ShapeClickerView from '@/views/ShapeClickerView.vue'
 import TileView from '@/views/TileView.vue'
 import CreateAccount from '../components/CreateAccount.vue'
 import Login from '../components/MyLogin.vue'
+import Store from '../views/MyStoreView.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -67,6 +68,11 @@ const router = createRouter({
       path:'/Tiles',
       name:'/Tiles',
       component: TileView
+    },
+    {
+      path:'/Store',
+      name: '/Store',
+      component: Store,
     }
   ],
 })

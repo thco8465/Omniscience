@@ -1,22 +1,51 @@
 <script setup>
 import { RouterView } from 'vue-router'
 import MainMenu from './components/MainMenu.vue'
+import { computed, onMounted } from 'vue';
+import { useStore } from 'vuex';
+
+const store = useStore();
+const equippedAvatar = computed(() => store.state.equippedAvatar);
+
+// Ensure the avatar loads when the app is initialized
+onMounted(() => {
+  store.dispatch("fetchEquippedItems");
+});
 </script>
 
 <template>
   <div class="title">
-    OMNIPOTENT
+    OMNISCIENCE
+    <div v-if="equippedAvatar" class="avatar-container">
+      <img :src="`${equippedAvatar}`" alt="Avatar" class="avatar" />
+    </div>
   </div>
-  <MainMenu />
+  <div>
+    <MainMenu />
+  </div>
   <div class="route">
     <RouterView />
   </div>
 </template>
-
 <style scoped>
+.avatar-container {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-left: 10px;
+  border: 3px solid gold;
+}
+
+.avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 .title {
   display: flex;
-  justify-content: center;
+  /* justify-content: center; */
+  margin-left: 25px;
   align-items: center;
   color: gold;
   font-size: 32px;

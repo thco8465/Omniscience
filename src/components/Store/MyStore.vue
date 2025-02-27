@@ -1,0 +1,300 @@
+<template>
+    <div class="store-page">
+      <header class="store-header">
+        <h1>Cosmetics Store</h1>
+      </header>
+      <div class="currency">
+        <h2>Currency</h2>
+        <div class="currency-details">
+          <p><strong>Gold:</strong> {{ gold }} 🥇</p>
+          <p><strong>Silver:</strong> {{ silver }} 🥈</p>
+          <p><strong>Bronze:</strong> {{ bronze }} 🥉</p>
+        </div>
+      </div>
+  
+      <div class="items-container">
+        <div class="background-column">
+          <h3>Backgrounds</h3>
+          <div v-for="item in backgrounds" :key="item.id" class="item">
+            <h4>{{ item.name }}</h4>
+            <img :src="item.image_url" alt="Background" class="cosmetic-image" />
+            <p class="price">
+              Price:
+              <span class="currency-price">Gold {{ item.price_gold }}</span>,
+              <span class="currency-price">Silver {{ item.price_silver }}</span>,
+              <span class="currency-price">Bronze {{ item.price_bronze }}</span>
+            </p>
+            <button @click="buyItem(item.id, item.name)">Buy</button>
+          </div>
+        </div>
+  
+        <div class="avatar-column">
+          <h3>Avatars</h3>
+          <div v-for="item in avatars" :key="item.id" class="item">
+            <h4>{{ item.name }}</h4>
+            <img :src="item.image_url" alt="Avatar" class="cosmetic-image" />
+            <p class="price">
+              Price:
+              <span class="currency-price">Gold {{ item.price_gold }}</span>,
+              <span class="currency-price">Silver {{ item.price_silver }}</span>,
+              <span class="currency-price">Bronze {{ item.price_bronze }}</span>
+            </p>
+            <button @click="buyItem(item.id, item.name)">Buy</button>
+          </div>
+        </div>
+  
+        <div class="cards-column">
+          <h3>Cards</h3>
+          <div v-for="item in cards" :key="item.id" class="item">
+            <h4>{{ item.name }}</h4>
+            <div v-if="item.style_class" :style="{ background: getColorFromClass(item.style_class) }" class="color-sample"></div>
+            <p class="price">
+              Price:
+              <span class="currency-price">Gold {{ item.price_gold }}</span>,
+              <span class="currency-price">Silver {{ item.price_silver }}</span>,
+              <span class="currency-price">Bronze {{ item.price_bronze }}</span>
+            </p>
+            <button @click="buyItem(item.id, item.name)">Buy</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+
+<script>
+import store from '@/store';
+import axios from 'axios'
+
+export default {
+    data() {
+        return {
+            user_id: this.$store.state.user ? this.$store.state.user.id : null,
+            gold: 0,
+            silver: 0,
+            bronze: 0,
+            backgrounds: [],
+            avatars: [],
+            cards: [],
+        }
+    },
+    methods: {
+        async fetchAchievements() {
+            if (!this.user_id) {
+                console.log('No user value')
+                return;
+            }
+            try {
+                const response = await axios.get(`/achievements/${this.user_id}`);
+                const { gold, silver, bronze } = response.data;
+
+                // Set currency values from the response
+                this.gold = gold;
+                this.silver = silver;
+                this.bronze = bronze;
+            } catch (error) {
+                console.error("Error fetching currency:", error);
+            }
+        },
+        getColorFromClass(styleClass) {
+            // Map style class to color
+            const colors = {
+                'red-card': '#ff4d4d',
+                'blue-card': '#4d79ff',
+                'green-card': '#4dff4d',
+                'purple-card': '#b366ff',
+                'gold-card': 'gold',
+                'platinum-card': 'linear-gradient(135deg, #e0e0e0, #b8b8b8)', // Platinum gradient
+                'diamond-card': 'linear-gradient(135deg, #5a5cfa, #66c2ff)',  // Diamond gradient
+                'rainbow-card': 'linear-gradient(45deg, red, orange, yellow, green, blue, purple)', // Rainbow gradient
+                // Add more mappings if necessary
+            };
+
+            return colors[styleClass] || '#ffffff'; // Default to white if no match
+        },
+        async buyItem(item_id, item_name) {
+            try {
+                await axios.post(`/store/${this.user_id}`, { item_id });
+
+                alert(`You have successfully purchased the ${item_name}`);
+                this.fetchAchievements();
+                this.fetchStoreItems();
+            } catch (error) {
+                console.error("Error purchasing item:", error);
+                alert("There was an issue with your purchase")
+            }
+        },
+        async equipCard(cardStyle) {
+            try {
+                await axios.post(`/equip-card/${store.state.user.id}`, { cardStyle });
+                store.commit("setEquippedCard", cardStyle);
+            } catch (error) {
+                console.error("Error equipping card: ", error)
+            }
+        },
+        async fetchStoreItems() {
+            try {
+                const response = await axios.get(`/store/${this.user_id}`);
+                const items = response.data;
+
+                // Categorize items based on their type
+                this.backgrounds = items.filter(item => item.type === 'background');
+                this.avatars = items.filter(item => item.type === 'avatar');
+                this.cards = items.filter(item => item.type === 'card');
+            } catch (error) {
+                console.error("Error fetching store items:", error);
+            }
+        }
+
+    },
+    mounted() {
+        // Fetch initial currency values 
+        this.fetchAchievements();
+        this.fetchStoreItems();
+    }
+}
+</script>
+
+<style scoped>
+.store-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 30px;
+}
+
+.store-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.color-sample {
+    width: 50px;
+    height: 50px;
+    border-radius: 5px;
+    margin: 10px 0;
+    display: inline-block;
+    background-color: #ecf0f1; /* Light Grayish Blue */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.store-header h1 {
+    font-size: 36px;
+    color: #f1c40f; /* Gold */
+    font-weight: bold;
+    background-color: #2c3e50; /* Dark Blue-Gray */
+    border-radius: 5px;
+}
+
+.currency {
+    background-color: #2c3e50; /* Dark Blue-Gray */
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 40px;
+}
+
+.currency h2 {
+    font-size: 28px;
+    color: gold; /* Light Grayish Blue */
+    margin-bottom: 10px;
+}
+
+.currency-details p {
+    font-size: 18px;
+    color: #ecf0f1; /* Light Grayish Blue */
+    margin: 5px 0;
+}
+
+.items-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);  /* 3 equal-width columns */
+    gap: 30px;
+    margin-top: 40px;
+    grid-auto-rows: auto; /* Ensure that row heights adjust automatically */
+    align-items: flex-start; /* Align items at the top of each column */
+}
+
+.background-column, .avatar-column, .cards-column {
+    padding: 20px;
+    background-color: #2c3e50; /* Dark Blue-Gray */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+.item-column h3 {
+    font-size: 24px;
+    text-align: center;
+    color: #f1c40f; /* Gold */
+    margin-bottom: 20px;
+}
+
+.item {
+    border: 1px solid #ddd;
+    padding: 15px;
+    background-color: #fff;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.item:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.item h4 {
+    font-size: 20px;
+    color: #34495e; /* Steel Blue */
+    margin-bottom: 10px;
+}
+
+.cosmetic-image {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    margin-bottom: 15px;
+    border-radius: 8px;
+}
+
+.price {
+    font-size: 16px;
+    color: #34495e; /* Steel Blue */
+    margin-bottom: 20px;
+}
+
+.currency-price {
+    font-weight: bold;
+    color: #e67e22; /* Warm Orange */
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    color: white;
+    background-color: #27ae60; /* Teal */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%;
+}
+
+button:hover {
+    background-color: #2ecc71; /* Lighter Teal */
+}
+
+button:disabled {
+    background-color: #bdc3c7; /* Silver Gray */
+    cursor: not-allowed;
+}
+
+</style>

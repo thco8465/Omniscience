@@ -1,5 +1,16 @@
 <template>
-  <div class="memory-game">
+  <div v-if="!start" class="info-screen">
+    <div class="info-content">
+      <h2>Copy Cat Rules</h2>
+      <p>You have ten seconds to memorize each sequence! You then have 10 seconds to repeat it! Each level adds a
+        character to memorize</p>
+      <p>Gold: 7 Sequences Memorized</p>
+      <p>Silver: 5 Sequences Memorized</p>
+      <p>Bronze: 3 Sequences Memorized</p>
+      <button class="button-info" @click="startGame">Start Game</button>
+    </div>
+  </div>
+  <div v-if="start" class="memory-game">
     <h1 class="game-title">Copy Cat</h1>
     <div v-if="!showSequence && !showResult">
       <h2>Memorize the Sequence (Level {{ level }}):</h2>
@@ -37,6 +48,7 @@ import axios from 'axios';
 export default {
   data() {
     return {
+      start: false,
       sequence: '',
       userSequence: '',
       showSequence: false,
@@ -54,7 +66,8 @@ export default {
   },
   methods: {
     startGame() {
-      this.sequence = this.generateSequence();
+      this.start = true,
+        this.sequence = this.generateSequence();
       this.showSequence = true;
       // Show sequence for 5 seconds
       this.sequenceTimer = setTimeout(() => {
@@ -161,9 +174,64 @@ export default {
 
 
 <style scoped>
+/* Info Screen Styles */
+.info-screen {
+  position: fixed;
+  top: 145px;
+  left: 0;
+  width: 100%;
+  height: 80%;
+  background-color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+  transition: opacity 0.5s ease;
+}
+
+.info-content {
+    text-align: center;
+    max-width: 400px;
+}
+
+.info-content h2 {
+    font-size: 32px;
+    margin-bottom: 20px;
+}
+
+.info-content p {
+    font-size: 18px;
+    margin-bottom: 30px;
+}
+.button-info {
+  padding: 15px 30px;
+  background-color: #3498db;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.button-info:hover {
+  background-color: #2980b9;
+}
 .memory-game {
   text-align: center;
   margin-top: 50px;
+  font-family: Arial, sans-serif;
+  text-align: center;
+  margin: 20px auto;
+  background-color: #f4f4f4;
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  min-height: 80vh;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 h2 {
@@ -198,14 +266,15 @@ button {
 button:hover {
   background-color: #0056b3;
 }
+
 .game-over {
-    text-align: center;
-    margin-top: 20px;
-    font-size: 24px;
-    font-weight: bold;
-    background: rgba(0, 0, 0, 0.7);
-    color: white;
-    padding: 20px;
-    border-radius: 10px;
+  text-align: center;
+  margin-top: 20px;
+  font-size: 24px;
+  font-weight: bold;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 20px;
+  border-radius: 10px;
 }
 </style>

@@ -12,6 +12,7 @@ export default {
     },
     data() {
         return {
+            start: false,
             keyStates: {},
             secretWord: "Loading...", // Show loading text initially
             guessedLetters: [],
@@ -43,6 +44,9 @@ export default {
         this.fetchRandomPhrase();
     },
     methods: {
+        startGame(){
+            this.start = true;
+        },
         restartGame() {
             this.guessedLetters = [];
             this.wrongGuesses = 0;
@@ -153,20 +157,96 @@ export default {
 
 <template>
     <main>
-        <div class="hang">
-            <HangMan :wrongGuesses="wrongGuesses" />
+        <div v-if="!start" class="info-screen">
+            <div class="info-content">
+                <h2>Hangman Rules</h2>
+                <p>Guess the word by selecting the correct letters. You have a limited number of wrong guesses!</p>
+                <p>Gold: All letters guessed</p>
+                <p>Silver: Half of letters guessed</p>
+                <p>Bronze: Third of letters guessed</p>
+                <button class="button-info" @click="startGame">Start Game</button>
+            </div>
         </div>
-        <div class="input">
-            <InputBar :secret-word="secretWord" :guessedLetters="guessedLetters" />
+        <div v-if="start" class="container">
+            <div class="hang">
+                <HangMan :wrongGuesses="wrongGuesses" />
+            </div>
+            <div class="input">
+                <InputBar :secret-word="secretWord" :guessedLetters="guessedLetters" />
+            </div>
+            <KeyBoard :keyStates="keyStates" @letter="handleLetterPress" @delete="handleDelete"
+                @submit="handleSubmit" />
+            <div v-if="gameOver" class="game-over">
+                <h2>{{ gameOverMessage }}, Score: {{ score }}</h2>
+                <button @click="restartGame">Play Again</button>
+            </div>
         </div>
-        <KeyBoard :keyStates="keyStates" @letter="handleLetterPress" @delete="handleDelete" @submit="handleSubmit" />
-        <div v-if="gameOver" class="game-over">
-            <h2>{{ gameOverMessage }}, Score: {{ score }}</h2>
-            <button @click="restartGame">Play Again</button>
-        </div>
-    </main>>
+    </main>
 </template>
 <style>
+.container {
+    text-align: center;
+    margin-top: 50px;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin: 20px auto;
+    background-color: #f4f4f4;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    min-height: 80vh;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+/* Info Screen Styles */
+.info-screen {
+  position: fixed;
+  top: 145px;
+  left: 0;
+  width: 100%;
+  height: 80%;
+  background-color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+  transition: opacity 0.5s ease;
+}
+
+.info-content {
+    text-align: center;
+    max-width: 400px;
+}
+
+.info-content h2 {
+    font-size: 32px;
+    margin-bottom: 20px;
+}
+
+.info-content p {
+    font-size: 18px;
+    margin-bottom: 30px;
+}
+h2 {
+  color: #007bff;
+}
+.button-info {
+  padding: 15px 30px;
+  background-color: #3498db;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.button-info:hover {
+  background-color: #2980b9;
+}
+
 .hang {
     display: flex;
     justify-content: center;
