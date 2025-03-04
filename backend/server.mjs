@@ -3,7 +3,6 @@ import fetch from 'node-fetch';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import db from '../Database/db.js'; // Adjust the path accordingly
-import { resolveEnvPrefix } from 'vite';
 
 import leaderboardRoutes from './endpoints/leaderboards.mjs'
 
