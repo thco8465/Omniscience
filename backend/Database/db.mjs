@@ -8,15 +8,23 @@ dotenv.config();
 const pgp = pgPromise();
 
 // Create a connection pool using environment variables
+// const db = pgp({
+//     host: process.env.DB_HOST || 'localhost',
+//     port: process.env.DB_PORT || 5432,
+//     database: process.env.DB_NAME || 'omnipotent',
+//     user: process.env.DB_USER || 'postgres',
+//     password: process.env.DB_PASSWORD || 'ArkhamknightN7?', // Secure your credentials
+//     ssl: { rejectUnauthorized: false },  // Enable SSL for Render PostgreSQL
+// });
+// Connection options
 const db = pgp({
-    host: process.env.DB_HOST || 'localhost',
-    port: process.env.DB_PORT || 5432,
-    database: process.env.DB_NAME || 'omnipotent',
-    user: process.env.DB_USER || 'postgres',
-    password: process.env.DB_PASSWORD || 'ArkhamknightN7?', // Secure your credentials
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
+    database: process.env.DB_DATABASE,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
     ssl: { rejectUnauthorized: false },  // Enable SSL for Render PostgreSQL
 });
-
 // Create users table
 db.none(`
   CREATE TABLE IF NOT EXISTS users (
