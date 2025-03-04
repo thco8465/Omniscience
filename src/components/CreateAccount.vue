@@ -39,9 +39,9 @@ export default {
     async createAccount() {
       this.loading = true;
       this.error = '';
+      const API_URL = import.meta.env.VITE_API_URL;
 
       try {
-        const API_URL = import.meta.env.VITE_API_URL;
         const user = createUser(this.newAccount.username, this.newAccount.email, this.newAccount.password);
         const response = await axios.post(`${API_URL}/createAccount`, user);
         if (response.data.success) {
