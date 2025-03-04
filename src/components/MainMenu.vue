@@ -23,6 +23,7 @@
             <RouterLink to="/Achievements">Achievements</RouterLink>
             <RouterLink to="/Store">Store</RouterLink>
             <RouterLink to="/Profile">Profile</RouterLink>
+            <RouterLink to="/Leaderboards">Leaderboards</RouterLink>
           </div>
           <div class="logout-container">
             <button class="logout" v-if="userId !== -1" @click="logout">Log out</button>
@@ -76,8 +77,9 @@ nav {
 
 .nav-container {
   display: flex;
-  justify-content: space-between; /* Space between the sections */
+  justify-content: space-evenly; /* Space between the sections */
   width: 100%;
+  align-items: center;
 }
 
 .nav-section {
@@ -95,7 +97,7 @@ nav a,
   text-decoration: none;
   font-size: 1rem;
   font-weight: 600;
-  padding: 10px 15px;
+  padding: 10px 20px;
   border-radius: 5px;
   transition: background-color 0.3s ease, color 0.3s ease;
   background: transparent;
@@ -116,6 +118,7 @@ nav a.router-link-exact-active {
 .dropdown {
   position: relative;
   top: -5px;
+  right: 10px;
   display: inline-block;
   z-index: 20;
   font-family: 'Libre Baskerville', serif;

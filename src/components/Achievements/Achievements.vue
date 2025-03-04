@@ -45,9 +45,10 @@ export default {
     const gold = ref(0);
 
     const fetchAchievements = async () => {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
       if (!user.value) return;
       try {
-        const { data } = await axios.get(`/achievements/${user.value.id}`);
+        const { data } = await axios.get(`${API_URL}/achievements/${user.value.id}`);
         totalScore.value = data.score;
         bronze.value = data.bronze;
         silver.value = data.silver;

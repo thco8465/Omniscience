@@ -5,10 +5,13 @@ import bodyParser from 'body-parser';
 import db from '../Database/db.js'; // Adjust the path accordingly
 import { resolveEnvPrefix } from 'vite';
 
+import leaderboardRoutes from './endpoints/leaderboards.mjs'
+
 const app = express();
 app.use(cors())
 app.use(bodyParser.json());
-const port = 3000;
+app.use('/leaderboard', leaderboardRoutes);
+const port = process.env.PORT || 3000;
 
 // Endpoint for account creation
 app.post('/createAccount', async (req, res) => {
@@ -107,36 +110,6 @@ app.get("/achievements/:user_id", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-//Get equipped background, avatar, and card style
-// app.get("/profile/equipped/:user_id", async (req, res) => {
-//   const { user_id } = req.params;
-//   try {
-//     const query = `
-//       SELECT 
-//         (SELECT i.image_url FROM user_items ui
-//          JOIN items i ON ui.item_id = i.id
-//          WHERE ui.user_id = $1 AND ui.equipped = true AND i.type = 'background'
-//          LIMIT 1) AS background,
-
-//         (SELECT i.image_url FROM user_items ui
-//          JOIN items i ON ui.item_id = i.id
-//          WHERE ui.user_id = $1 AND ui.equipped = true AND i.type = 'avatar'
-//          LIMIT 1) AS avatar,
-
-//         (SELECT i.image_url FROM user_items ui
-//          JOIN items i ON ui.item_id = i.id
-//          WHERE ui.user_id = $1 AND ui.equipped = true AND i.type = 'card'
-//          LIMIT 1) AS card;
-//     `;
-
-//     const result = await db.oneOrNone(query, [user_id]);
-
-//     res.json(result);
-//   } catch (error) {
-//     console.error("Error fetching equipped items:", error);
-//     res.status(500).json({ message: "Server error" });
-//   }
-// });
 app.get("/profile/equipped/:user_id", async (req, res) => {
   const { user_id } = req.params;
   try {

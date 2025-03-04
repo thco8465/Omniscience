@@ -23,7 +23,6 @@
 <script>
 import axios from 'axios';
 import { createUser } from '../UserFactory';
-axios.defaults.baseURL = 'http://localhost:3000';
 export default {
   data() {
     return {
@@ -42,8 +41,9 @@ export default {
       this.error = '';
 
       try {
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
         const user = createUser(this.newAccount.username, this.newAccount.email, this.newAccount.password);
-        const response = await axios.post('/createAccount', user);
+        const response = await axios.post(`${API_URL}/createAccount`, user);
         if (response.data.success) {
           console.log('Account created');
         } else {

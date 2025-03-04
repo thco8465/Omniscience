@@ -25,10 +25,11 @@ export default {
         const username = ref('');
         const password = ref('');
         const showErrorMessage = ref(false);
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
         const router = useRouter();  // Use useRouter to get the router instance
         const login = async () => {
             try {
-                const response = await axios.post('/login', {
+                const response = await axios.post(`${API_URL}/login`, {
                     username: username.value,
                     password: password.value,
                 });

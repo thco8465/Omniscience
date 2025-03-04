@@ -11,6 +11,7 @@ import TileView from '@/views/TileView.vue'
 import CreateAccount from '../components/CreateAccount.vue'
 import Login from '../components/MyLogin.vue'
 import Store from '../views/MyStoreView.vue'
+import LeaderBoards from '../views/LeaderBoards.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -73,6 +74,11 @@ const router = createRouter({
       path:'/Store',
       name: '/Store',
       component: Store,
+    },
+    {
+      path:'/Leaderboards',
+      name: '/Leaderboards',
+      component: LeaderBoards,
     }
   ],
 })

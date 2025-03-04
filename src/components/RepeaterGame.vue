@@ -12,19 +12,15 @@
   </div>
   <div v-if="start" class="memory-game">
     <h1 class="game-title">Copy Cat</h1>
-    <div v-if="!showSequence && !showResult">
-      <h2>Memorize the Sequence (Level {{ level }}):</h2>
-      <button @click="startGame">Start</button>
-    </div>
     <div v-if="showSequence">
-      <h2>Memorize the Sequence:</h2>
+      <h2>Memorize the Sequence (Level {{ level }}):</h2>
       <p>{{ sequence }}</p>
     </div>
     <div v-if="showCountdown">
       <h2>Repeat the Sequence:</h2>
       <input v-model="userSequence" type="text" maxlength="20" />
       <p>Time remaining: {{ countdown }} seconds</p>
-      <button @click="checkSequence">Submit</button>
+      <button v-if="!showResult" @click="checkSequence">Submit</button>
     </div>
     <div v-if="showResult">
       <h2>{{ resultMessage }}</h2>
@@ -32,11 +28,12 @@
         <button @click="nextLevel">Next Level</button>
       </div>
       <div v-else>
-        <button @click="resetGame">Play Again</button>
+        <button @click="restartGame">Play Again</button>
       </div>
       <!-- Medal display based on score -->
-      <div v-if="earnedMedal" class="game-over">
-        <p>Congratulations! You earned the {{ earnedMedal }} medal!</p>
+      <div class="game-over">
+        <p v-if="earnedMedal">Congratulations! You earned the {{ earnedMedal }} medal!</p>
+        <p>Score: {{ score }}</p>
       </div>
     </div>
   </div>
@@ -104,6 +101,7 @@ export default {
       } else {
         this.resultMessage = 'Incorrect! Start Over.';
         this.updateAchievements();
+        this.submitScoreToLeaderboard();
         this.level = 1;
         this.isCorrect = false;  // Set to false if the answer is incorrect
         this.calculateMedal();  // Calculate medal after result
@@ -111,8 +109,15 @@ export default {
       this.showResult = true;
     },
     nextLevel() {
-      this.resetGame();
+      this.resetLevel();
       this.startGame();  // Restart the game for the next level
+    },
+    restartGame(){
+      this.level = 1
+      this.score = 0
+      this.earnedMedal = ''
+      this.resetLevel();
+      this.startGame();
     },
     async updateAchievements() {
       if (!this.$store.state.user) {
@@ -121,12 +126,13 @@ export default {
       }
 
       const userId = this.$store.state.user.id;
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
       try {
         // Fetch current achievements from the database
-        const response = await axios.get(`/achievements/${userId}`);
+        const response = await axios.get(`${API_URL}/achievements/${userId}`);
         const currentAchievements = response.data || { score: 0, bronze: 0, silver: 0, gold: 0 };
-
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
         // Calculate medals based on the current session's score
         let bronze = currentAchievements.bronze;
         let silver = currentAchievements.silver;
@@ -137,7 +143,7 @@ export default {
         else if (this.score > 2) bronze += 1;
 
         // Update achievements in the database by adding new values
-        await axios.post(`/achievements/${userId}`, {
+        await axios.post(`${API_URL}/achievements/${userId}`, {
           score: currentAchievements.score + this.score,  // Add new score to existing score
           bronze,
           silver,
@@ -158,7 +164,7 @@ export default {
         this.earnedMedal = 'Bronze';
       }
     },
-    resetGame() {
+    resetLevel() {
       clearInterval(this.countdownTimer); // Clear any active timers
       clearTimeout(this.sequenceTimer); // Clear the sequence timer
       this.sequence = '';
@@ -166,7 +172,26 @@ export default {
       this.showResult = false;
       this.resultMessage = '';
       this.showCountdown = false;
-      this.earnedMedal = ''; // Reset earned medal
+    },
+    async submitScoreToLeaderboard() {
+      if (!this.$store.state.user) {
+        console.log("No user logged in!");
+        return;
+      }
+      const userId = this.$store.state.user.id;
+      const gameName = 'Copy Cat';
+      const userScore = this.score;
+
+      try {
+        const response = await axios.post('/leaderboard/' + gameName, {
+          user_id: userId,
+          score: userScore,
+        });
+
+        console.log('Score submitted to leaderboard:', response.data);
+      } catch (error) {
+        console.error('Error submitting score to leaderboard:', error);
+      }
     },
   },
 };
@@ -190,19 +215,20 @@ export default {
 }
 
 .info-content {
-    text-align: center;
-    max-width: 400px;
+  text-align: center;
+  max-width: 400px;
 }
 
 .info-content h2 {
-    font-size: 32px;
-    margin-bottom: 20px;
+  font-size: 32px;
+  margin-bottom: 20px;
 }
 
 .info-content p {
-    font-size: 18px;
-    margin-bottom: 30px;
+  font-size: 18px;
+  margin-bottom: 30px;
 }
+
 .button-info {
   padding: 15px 30px;
   background-color: #3498db;
@@ -216,6 +242,7 @@ export default {
 .button-info:hover {
   background-color: #2980b9;
 }
+
 .memory-game {
   text-align: center;
   margin-top: 50px;

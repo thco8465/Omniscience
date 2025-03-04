@@ -97,12 +97,12 @@ export default {
       }
 
       const userId = this.$store.state.user.id;
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
       try {
         // Fetch current achievements from the database
-        const response = await axios.get(`/achievements/${userId}`);
+        const response = await axios.get(`${API_URL}/achievements/${userId}`);
         const currentAchievements = response.data || { score: 0, bronze: 0, silver: 0, gold: 0 };
-
         // Calculate medals based on the current session's score
         let bronze = currentAchievements.bronze;
         let silver = currentAchievements.silver;
@@ -114,7 +114,7 @@ export default {
         console.log(this.score, this.medal)
 
         // Update achievements in the database by adding new values
-        await axios.post(`/achievements/${userId}`, {
+        await axios.post(`${API_URL}/achievements/${userId}`, {
           score: currentAchievements.score + this.score,  // Add new score to existing score
           bronze,
           silver,
@@ -220,9 +220,10 @@ export default {
     },
     async getDefinition(word) {
       //console.log(word)
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
       try {
         // Call your backend server instead of the dictionary API
-        const response = await axios.get(`http://localhost:5000/get-definition/${word}`);
+        const response = await axios.get(`${API_URL}/get-definition/${word}`);
         return response.data; // Return the definition from the backend
       } catch (error) {
         console.error("Error fetching definition:", error);
@@ -293,10 +294,12 @@ export default {
         //console.log(this.score)
         if (normalizedGuess === normalizedTarget) {
           await this.updateAchievements()
+          this.submitScoreToLeaderboard();
           this.showEnd = true
           alert("You win!");
         } else if (this.guesses.length >= this.maxGuesses) {
           await this.updateAchievements()
+          this.submitScoreToLeaderboard();
           this.showEnd = true
           alert(`Game Over! The word was ${this.targetWord}`);
         }
@@ -304,8 +307,28 @@ export default {
         // Reset the current guess
         this.currentGuess = "";
       }
-    }
+    },
+    async submitScoreToLeaderboard() {
+      if (!this.$store.state.user) {
+        console.log("No user logged in!");
+        return;
+      }
+      const userId = this.$store.state.user.id;
+      const gameName = 'Alpha Arena';
+      const userScore = this.score;
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
+      try {
+        const response = await axios.post(`${API_URL}/leaderboard/` + gameName, {
+          user_id: userId,
+          score: userScore,
+        });
+
+        console.log('Score submitted to leaderboard:', response.data);
+      } catch (error) {
+        console.error('Error submitting score to leaderboard:', error);
+      }
+    },
   },
 };
 </script>
@@ -341,9 +364,11 @@ export default {
   z-index: 10;
   transition: opacity 0.5s ease;
 }
+
 h2 {
   color: #007bff;
 }
+
 .info-content {
   text-align: center;
   max-width: 400px;

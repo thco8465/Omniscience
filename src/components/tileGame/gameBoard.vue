@@ -182,6 +182,7 @@ export default {
         clearInterval(this.intervalId);
         this.gameOver = true;
         this.updateAchievements();
+        this.submitScoreToLeaderboard();
       }
       //this.observer.notify(this.timer); // Notify observers when the timer changes
     },
@@ -192,12 +193,12 @@ export default {
       }
 
       const userId = this.$store.state.user.id;
-
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
       try {
         // Fetch current achievements from the database
-        const response = await axios.get(`/achievements/${userId}`);
+        const response = await axios.get(`${API_URL}/achievements/${userId}`);
         const currentAchievements = response.data || { score: 0, bronze: 0, silver: 0, gold: 0 };
-
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
         // Calculate medals based on the current session's score
         let bronze = currentAchievements.bronze;
         let silver = currentAchievements.silver;
@@ -208,7 +209,7 @@ export default {
         else if (this.score > 2) this.medal = "bronze", bronze += 1;
 
         // Update achievements in the database by adding new values
-        await axios.post(`/achievements/${userId}`, {
+        await axios.post(`${API_URL}/achievements/${userId}`, {
           score: currentAchievements.score + this.score,  // Add new score to existing score
           bronze,
           silver,
@@ -218,6 +219,27 @@ export default {
         console.log("Achievements updated successfully");
       } catch (error) {
         console.log("Error updating achievements:", error);
+      }
+    },
+    async submitScoreToLeaderboard() {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      if (!this.$store.state.user) {
+        console.log("No user logged in!");
+        return;
+      }
+      const userId = this.$store.state.user.id;
+      const gameName = 'Tiles of Terror';
+      const userScore = this.score;
+
+      try {
+        const response = await axios.post(`${API_URL}/leaderboard/` + gameName, {
+          user_id: userId,
+          score: userScore,
+        });
+
+        console.log('Score submitted to leaderboard:', response.data);
+      } catch (error) {
+        console.error('Error submitting score to leaderboard:', error);
       }
     },
   },

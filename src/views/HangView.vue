@@ -31,7 +31,6 @@ export default {
         },
         gameOverMessage() {
             if (this.gameOver) {
-                this.updateAchievements();
                 return `${this.wordGuessed ? "🎉 You Win! 🎉" : "☠️ Game Over! The word was: " + this.secretWord} ${this.earnedMedal ? `You earned the ${this.earnedMedal} medal!` : ''}`;
             }
             return '';
@@ -40,12 +39,24 @@ export default {
             return [...new Set(this.secretWord.toLowerCase().replace(/\s/g, ''))];
         }
     },
+    watch: {
+        gameOver(newVal) {
+            if (newVal) {
+                // If the game is over, handle the game over logic
+                this.handleGameOver();
+            }
+        }
+    },
     mounted() {
         this.fetchRandomPhrase();
     },
     methods: {
-        startGame(){
+        startGame() {
             this.start = true;
+        },
+        handleGameOver() {
+            this.updateAchievements();
+            this.submitScoreToLeaderboard();
         },
         restartGame() {
             this.guessedLetters = [];
@@ -60,12 +71,12 @@ export default {
             }
 
             const userId = this.$store.state.user.id;
-
+            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
             try {
                 // Fetch current achievements from the database
-                const response = await axios.get(`/achievements/${userId}`);
+                const response = await axios.get(`${API_URL}/achievements/${userId}`);
                 const currentAchievements = response.data || { score: 0, bronze: 0, silver: 0, gold: 0 };
-
+                const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
                 // Calculate medals based on the current session's score
                 let bronze = currentAchievements.bronze;
                 let silver = currentAchievements.silver;
@@ -85,7 +96,7 @@ export default {
                 }
 
                 // Update achievements in the database by adding new values
-                await axios.post(`/achievements/${userId}`, {
+                await axios.post(`${API_URL}/achievements/${userId}`, {
                     score: currentAchievements.score + this.score,  // Add new score to existing score
                     bronze,
                     silver,
@@ -150,6 +161,27 @@ export default {
         handleSubmit() {
             console.log("Submit pressed");
         },
+        async submitScoreToLeaderboard() {
+            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+            if (!this.$store.state.user) {
+                console.log("No user logged in!");
+                return;
+            }
+            const userId = this.$store.state.user.id;
+            const gameName = 'Hangman';
+            const userScore = this.score;
+
+            try {
+                const response = await axios.post(`${API_URL}/leaderboard/` + gameName, {
+                    user_id: userId,
+                    score: userScore,
+                });
+
+                console.log('Score submitted to leaderboard:', response.data);
+            } catch (error) {
+                console.error('Error submitting score to leaderboard:', error);
+            }
+        },
     },
 };
 </script>
@@ -201,19 +233,20 @@ export default {
     min-height: 80vh;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
+
 /* Info Screen Styles */
 .info-screen {
-  position: fixed;
-  top: 145px;
-  left: 0;
-  width: 100%;
-  height: 80%;
-  background-color: rgba(255, 255, 255, 0.9);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 10;
-  transition: opacity 0.5s ease;
+    position: fixed;
+    top: 145px;
+    left: 0;
+    width: 100%;
+    height: 80%;
+    background-color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    transition: opacity 0.5s ease;
 }
 
 .info-content {
@@ -230,21 +263,23 @@ export default {
     font-size: 18px;
     margin-bottom: 30px;
 }
+
 h2 {
-  color: #007bff;
+    color: #007bff;
 }
+
 .button-info {
-  padding: 15px 30px;
-  background-color: #3498db;
-  border: none;
-  border-radius: 5px;
-  color: white;
-  font-size: 18px;
-  cursor: pointer;
+    padding: 15px 30px;
+    background-color: #3498db;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
 }
 
 .button-info:hover {
-  background-color: #2980b9;
+    background-color: #2980b9;
 }
 
 .hang {

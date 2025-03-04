@@ -33,13 +33,15 @@ export default createStore({
       commit('setUser', user);
     },
     async fetchEquippedItems({commit, state}){
+      console.log(import.meta.env.VITE_API_URL); // Should log the backend URL
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
       if (!state.user) return;
       try{
-        const response = await axios.get(`/profile/equipped/${state.user.id}`);
+        const response = await axios.get(`${API_URL}/profile/equipped/${state.user.id}`);
         console.log(response.data)
-        commit("setEquippedAvatar", response.data.avatar || null);
-        commit("setEquippedBackground", response.data.background || null);
-        commit("setEquippedCard", response.data.card || null); 
+        commit("setEquippedAvatar", response.data.avatar ?? null);
+        commit("setEquippedBackground", response.data.background ?? null);
+        commit("setEquippedCard", response.data.card ?? null); 
       } catch(error){
         console.error("Error fetching equipped avatar:", error);
       }

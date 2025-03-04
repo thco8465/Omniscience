@@ -80,12 +80,13 @@ export default {
     },
     methods: {
         async fetchAchievements() {
+            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
             if (!this.user_id) {
                 console.log('No user value')
                 return;
             }
             try {
-                const response = await axios.get(`/achievements/${this.user_id}`);
+                const response = await axios.get(`${API_URL}/achievements/${this.user_id}`);
                 const { gold, silver, bronze } = response.data;
 
                 // Set currency values from the response
@@ -113,8 +114,9 @@ export default {
             return colors[styleClass] || '#ffffff'; // Default to white if no match
         },
         async buyItem(item_id, item_name) {
+            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
             try {
-                await axios.post(`/store/${this.user_id}`, { item_id });
+                await axios.post(`${API_URL}/store/${this.user_id}`, { item_id });
 
                 alert(`You have successfully purchased the ${item_name}`);
                 this.fetchAchievements();
@@ -125,16 +127,18 @@ export default {
             }
         },
         async equipCard(cardStyle) {
+            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
             try {
-                await axios.post(`/equip-card/${store.state.user.id}`, { cardStyle });
+                await axios.post(`${API_URL}/equip-card/${store.state.user.id}`, { cardStyle });
                 store.commit("setEquippedCard", cardStyle);
             } catch (error) {
                 console.error("Error equipping card: ", error)
             }
         },
         async fetchStoreItems() {
+            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
             try {
-                const response = await axios.get(`/store/${this.user_id}`);
+                const response = await axios.get(`${API_URL}/store/${this.user_id}`);
                 const items = response.data;
 
                 // Categorize items based on their type
@@ -222,6 +226,10 @@ export default {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
+    color: #f1c40f; /* Gold */
+    justify-content: center;
+    align-items: center;
+
 }
 
 .item-column h3 {

@@ -1,8 +1,9 @@
 <template>
-   <div v-if="!start" class="info-screen">
+  <div v-if="!start" class="info-screen">
     <div class="info-content">
       <h2>Terminology Twister Rules</h2>
-      <p>Unscramble each word or abbrieviation! You have 60 seconds. Difficulty increases every three correct guesses</p>
+      <p>Unscramble each word or abbrieviation! You have 60 seconds. Difficulty increases every three correct guesses
+      </p>
       <p>Gold: 10 Words Guessed</p>
       <p>Silver: 5 Words Guessed </p>
       <p>Bronze: 3 Words Guessed</p>
@@ -27,7 +28,7 @@
       <p v-if="medal">You earned the {{ medal }} medal</p>
 
       <!-- Show the list of words and definitions -->
-      <div v-if="wordList.length">
+      <div class ="definitions" v-if="wordList.length">
         <h3>Words and Definitions</h3>
         <ul :style="{ fontSize: fontSize }">
           <li v-for="(item, index) in wordList" :key="index">
@@ -50,7 +51,7 @@ export default {
       currentWord: { original: "", scrambled: "" },
       userInput: '',
       score: 0,
-      timeRemaining: 60,
+      timeRemaining: 20,
       gameOver: false,
       timer: null,
       incorrect: false,
@@ -103,7 +104,7 @@ export default {
       return word.split("").sort(() => Math.random() - 0.5).join("");
     },
     startGame() {
-      this.start=true;
+      this.start = true;
       this.score = 0;
       this.gameOver = false;
       this.incorrect = false;  // Reset incorrect state
@@ -139,12 +140,12 @@ export default {
       }
 
       const userId = this.$store.state.user.id;
-
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
       try {
         // Fetch current achievements from the database
-        const response = await axios.get(`/achievements/${userId}`);
+        const response = await axios.get(`${API_URL}/achievements/${userId}`);
         const currentAchievements = response.data || { score: 0, bronze: 0, silver: 0, gold: 0 };
-
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
         // Calculate medals based on the current session's score
         let bronze = currentAchievements.bronze;
         let silver = currentAchievements.silver;
@@ -155,7 +156,7 @@ export default {
         else if (this.score > 2) this.medal = "bronze", bronze += 1;
 
         // Update achievements in the database by adding new values
-        await axios.post(`/achievements/${userId}`, {
+        await axios.post(`${API_URL}/achievements/${userId}`, {
           score: currentAchievements.score + this.score,  // Add new score to existing score
           bronze,
           silver,
@@ -167,16 +168,38 @@ export default {
         console.log("Error updating achievements:", error);
       }
     },
+    async submitScoreToLeaderboard() {
+      if (!this.$store.state.user) {
+        console.log("No user logged in!");
+        return;
+      }
+      const userId = this.$store.state.user.id;
+      const gameName = 'Terminology Twisters';
+      const userScore = this.score;
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+      try {
+        const response = await axios.post(`${API_URL}/leaderboard/` + gameName, {
+          user_id: userId,
+          score: userScore,
+        });
+
+        console.log('Score submitted to leaderboard:', response.data);
+      } catch (error) {
+        console.error('Error submitting score to leaderboard:', error);
+      }
+    },
     startTimer() {
-      this.timeRemaining = 60;
+      this.timeRemaining = 20;
       this.timer = setInterval(() => {
         this.timeRemaining -= 1;
         if (this.timeRemaining <= 0) {
           clearInterval(this.timer);
           this.gameOver = true;
+          this.updateAchievements()
+          this.submitScoreToLeaderboard()
         }
       }, 1000);
-      this.updateAchievements()
     },
   },
   mounted() {
@@ -201,7 +224,8 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 40vh;
+  /* height: 40vh; */
+  min-height: 40vh; /* Optional: set a minimum height, but let it grow */
   text-align: center;
   text-align: center;
   margin-top: 50px;
@@ -218,6 +242,7 @@ export default {
   align-items: center;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
+
 /* Info Screen Styles */
 .info-screen {
   position: fixed;
@@ -261,6 +286,7 @@ export default {
 .button-info:hover {
   background-color: #2980b9;
 }
+
 .game-title {
   color: gold;
   text-shadow: 1px 1px 1px white, -1px 0 3px #002823;
@@ -276,7 +302,14 @@ export default {
   margin-top: 20px;
   text-align: center;
 }
-
+.definitions {
+  max-height: 200px; /* Set a maximum height to limit the container */
+  overflow-y: auto; /* Enable vertical scrolling when the content overflows */
+  margin-top: 20px;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
 button {
   padding: 10px;
   background-color: #DFFF00;
