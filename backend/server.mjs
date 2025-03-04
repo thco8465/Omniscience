@@ -10,7 +10,7 @@ const app = express();
 app.use(cors())
 app.use(bodyParser.json());
 app.use('/leaderboard', leaderboardRoutes);
-const port = process.env.PORT || 3000;
+const port = process.env.PORT;
 
 // Endpoint for account creation
 app.post('/createAccount', async (req, res) => {
