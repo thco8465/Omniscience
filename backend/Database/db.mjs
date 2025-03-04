@@ -14,6 +14,7 @@ const db = pgp({
     database: process.env.DB_NAME || 'omnipotent',
     user: process.env.DB_USER || 'postgres',
     password: process.env.DB_PASSWORD || 'ArkhamknightN7?', // Secure your credentials
+    ssl: { rejectUnauthorized: false },  // Enable SSL for Render PostgreSQL
 });
 
 // Create users table
