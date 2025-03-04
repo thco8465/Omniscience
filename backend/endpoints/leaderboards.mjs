@@ -1,6 +1,6 @@
 //Change medals earned 
 import express from 'express'
-import db from '../../Database/db.js'
+import db from '../Database/db.mjs'
 
 const router = express.Router();
 
