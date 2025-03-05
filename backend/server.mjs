@@ -10,7 +10,7 @@ const app = express();
 app.use(cors())
 app.use(bodyParser.json());
 app.use('/leaderboard', leaderboardRoutes);
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 10000;
 
 app.get('/health', (req, res) => {
   res.status(200).send('OK');
