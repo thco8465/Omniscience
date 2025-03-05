@@ -168,7 +168,6 @@ export default {
       try {
         const response = await axios.get(`${API_URL}/achievements/${userId}`);
         const currentAchievements = response.data || { score: 0, bronze: 0, silver: 0, gold: 0 };
-        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
         let bronze = currentAchievements.bronze;
         let silver = currentAchievements.silver;
         let gold = currentAchievements.gold;
