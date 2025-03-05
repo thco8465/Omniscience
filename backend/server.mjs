@@ -17,12 +17,17 @@ app.use(bodyParser.json());
 app.use('/leaderboard', leaderboardRoutes);
 const PORT = process.env.PORT || 10000;
 app.options('*', cors()); // Allow pre-flight requests for all routes
+app.use((req, res, next) => {
+  console.log(`${req.method} request to ${req.url}`);
+  next();
+});
 
 app.get('/', (req, res) => {
   console.log('Base request works /')
   res.sendStatus(200)
 })
 
+app.options('/createAccount', cors());  // Handle pre-flight for createAccount endpoint
 
 // Endpoint for account creation
 app.post('/createAccount', async (req, res) => {
