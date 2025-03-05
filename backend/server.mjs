@@ -7,10 +7,16 @@ import db from './Database/db.mjs'; // Adjust the path accordingly
 import leaderboardRoutes from './endpoints/leaderboards.mjs'
 
 const app = express();
-app.use(cors({ origin: '*' })); // Allow all origins (for testing)
+// CORS setup (allow all origins)
+app.use(cors({
+  origin: '*',  // Allow all origins for testing purposes
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Include OPTIONS method
+  allowedHeaders: ['Content-Type', 'Authorization'] // Allow necessary headers
+}));
 app.use(bodyParser.json());
 app.use('/leaderboard', leaderboardRoutes);
 const PORT = process.env.PORT || 10000;
+app.options('*', cors()); // Allow pre-flight requests for all routes
 
 app.get('/', (req, res) => {
   console.log('Base request works /')
