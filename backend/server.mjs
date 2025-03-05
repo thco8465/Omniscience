@@ -16,6 +16,13 @@ app.get('/health', (req, res) => {
   res.status(200).send('OK');
 });
 
+process.on('uncaughtException', (err) => {
+  console.error('❌ Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Unhandled Promise Rejection:', reason);
+});
 
 // Endpoint for account creation
 app.post('/createAccount', async (req, res) => {
