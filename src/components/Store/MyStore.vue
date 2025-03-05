@@ -1,65 +1,81 @@
 <template>
     <div class="store-page">
-      <header class="store-header">
-        <h1>Cosmetics Store</h1>
-      </header>
-      <div class="currency">
-        <h2>Currency</h2>
-        <div class="currency-details">
-          <p><strong>Gold:</strong> {{ gold }} 🥇</p>
-          <p><strong>Silver:</strong> {{ silver }} 🥈</p>
-          <p><strong>Bronze:</strong> {{ bronze }} 🥉</p>
+        <header class="store-header">
+            <h1>Cosmetics Store</h1>
+        </header>
+        <div class="currency">
+            <h2>Currency</h2>
+            <div class="currency-details">
+                <p><strong>Gold:</strong> {{ gold }} 🥇</p>
+                <p><strong>Silver:</strong> {{ silver }} 🥈</p>
+                <p><strong>Bronze:</strong> {{ bronze }} 🥉</p>
+            </div>
         </div>
-      </div>
-  
-      <div class="items-container">
-        <div class="background-column">
-          <h3>Backgrounds</h3>
-          <div v-for="item in backgrounds" :key="item.id" class="item">
-            <h4>{{ item.name }}</h4>
-            <img :src="item.image_url" alt="Background" class="cosmetic-image" />
-            <p class="price">
-              Price:
-              <span class="currency-price">Gold {{ item.price_gold }}</span>,
-              <span class="currency-price">Silver {{ item.price_silver }}</span>,
-              <span class="currency-price">Bronze {{ item.price_bronze }}</span>
-            </p>
-            <button @click="buyItem(item.id, item.name)">Buy</button>
-          </div>
+
+        <div class="items-container">
+            <div class="background-column">
+                <h3>Backgrounds</h3>
+                <div v-for="item in backgrounds" :key="item.id" class="item">
+                    <h4>{{ item.name }}</h4>
+                    <img :src="item.image_url" alt="Background" class="cosmetic-image" />
+                    <p class="price">
+                        Price:
+                        <span class="currency-price">Gold: {{ item.price_gold }}</span>,
+                        <span class="currency-price">Silver: {{ item.price_silver }}</span>,
+                        <span class="currency-price">Bronze: {{ item.price_bronze }}</span>
+                    </p>
+                    <button
+                        :style="{ backgroundColor: (gold > item.price_gold || silver > item.price_silver || bronze > item.price_bronze) ? 'green' : 'gray' }"
+                        :disabled="!(gold > item.price_gold || silver > item.price_silver || bronze > item.price_bronze)"
+                        @click="buyItem(item.id, item.name)">
+                        Buy
+                    </button>
+                </div>
+            </div>
+
+            <div class="avatar-column">
+                <h3>Avatars</h3>
+                <div v-for="item in avatars" :key="item.id" class="item">
+                    <h4>{{ item.name }}</h4>
+                    <img :src="item.image_url" alt="Avatar" class="cosmetic-image" />
+                    <p class="price">
+                        Price:
+                        <span class="currency-price">Gold {{ item.price_gold }}</span>,
+                        <span class="currency-price">Silver {{ item.price_silver }}</span>,
+                        <span class="currency-price">Bronze {{ item.price_bronze }}</span>
+                    </p>
+                    <button
+                        :style="{ backgroundColor: (gold > item.price_gold || silver > item.price_silver || bronze > item.price_bronze) ? 'green' : 'gray' }"
+                        :disabled="!(gold > item.price_gold || silver > item.price_silver || bronze > item.price_bronze)"
+                        @click="buyItem(item.id, item.name)">
+                        Buy
+                    </button>
+                </div>
+            </div>
+
+            <div class="cards-column">
+                <h3>Cards</h3>
+                <div v-for="item in cards" :key="item.id" class="item">
+                    <h4>{{ item.name }}</h4>
+                    <div v-if="item.style_class" :style="{ background: getColorFromClass(item.style_class) }"
+                        class="color-sample"></div>
+                    <p class="price">
+                        Price:
+                        <span class="currency-price">Gold {{ item.price_gold }}</span>,
+                        <span class="currency-price">Silver {{ item.price_silver }}</span>,
+                        <span class="currency-price">Bronze {{ item.price_bronze }}</span>
+                    </p>
+                    <button
+                        :style="{ backgroundColor: (gold > item.price_gold || silver > item.price_silver || bronze > item.price_bronze) ? 'green' : 'gray' }"
+                        :disabled="!(gold > item.price_gold || silver > item.price_silver || bronze > item.price_bronze)"
+                        @click="buyItem(item.id, item.name)">
+                        Buy
+                    </button>
+                </div>
+            </div>
         </div>
-  
-        <div class="avatar-column">
-          <h3>Avatars</h3>
-          <div v-for="item in avatars" :key="item.id" class="item">
-            <h4>{{ item.name }}</h4>
-            <img :src="item.image_url" alt="Avatar" class="cosmetic-image" />
-            <p class="price">
-              Price:
-              <span class="currency-price">Gold {{ item.price_gold }}</span>,
-              <span class="currency-price">Silver {{ item.price_silver }}</span>,
-              <span class="currency-price">Bronze {{ item.price_bronze }}</span>
-            </p>
-            <button @click="buyItem(item.id, item.name)">Buy</button>
-          </div>
-        </div>
-  
-        <div class="cards-column">
-          <h3>Cards</h3>
-          <div v-for="item in cards" :key="item.id" class="item">
-            <h4>{{ item.name }}</h4>
-            <div v-if="item.style_class" :style="{ background: getColorFromClass(item.style_class) }" class="color-sample"></div>
-            <p class="price">
-              Price:
-              <span class="currency-price">Gold {{ item.price_gold }}</span>,
-              <span class="currency-price">Silver {{ item.price_silver }}</span>,
-              <span class="currency-price">Bronze {{ item.price_bronze }}</span>
-            </p>
-            <button @click="buyItem(item.id, item.name)">Buy</button>
-          </div>
-        </div>
-      </div>
     </div>
-  </template>
+</template>
 
 
 <script>
@@ -148,13 +164,31 @@ export default {
             } catch (error) {
                 console.error("Error fetching store items:", error);
             }
+        },
+        async fetchAllItems() {
+            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+            try {
+                const response = await axios.get(`${API_URL}/allstore`);
+                const items = response.data;
+
+                // Categorize items based on their type
+                this.backgrounds = items.filter(item => item.type === 'background');
+                this.avatars = items.filter(item => item.type === 'avatar');
+                this.cards = items.filter(item => item.type === 'card');
+            } catch (error) {
+                console.error("Error fetching store items:", error);
+            }
         }
 
     },
     mounted() {
         // Fetch initial currency values 
         this.fetchAchievements();
-        this.fetchStoreItems();
+        if(this.user_id){
+            this.fetchStoreItems();
+        }else{
+            this.fetchAllItems();
+        }
     }
 }
 </script>
@@ -177,20 +211,24 @@ export default {
     border-radius: 5px;
     margin: 10px 0;
     display: inline-block;
-    background-color: #ecf0f1; /* Light Grayish Blue */
+    background-color: #ecf0f1;
+    /* Light Grayish Blue */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .store-header h1 {
     font-size: 36px;
-    color: #f1c40f; /* Gold */
+    color: #f1c40f;
+    /* Gold */
     font-weight: bold;
-    background-color: #2c3e50; /* Dark Blue-Gray */
+    background-color: #2c3e50;
+    /* Dark Blue-Gray */
     border-radius: 5px;
 }
 
 .currency {
-    background-color: #2c3e50; /* Dark Blue-Gray */
+    background-color: #2c3e50;
+    /* Dark Blue-Gray */
     padding: 15px;
     border-radius: 8px;
     text-align: center;
@@ -200,33 +238,42 @@ export default {
 
 .currency h2 {
     font-size: 28px;
-    color: gold; /* Light Grayish Blue */
+    color: gold;
+    /* Light Grayish Blue */
     margin-bottom: 10px;
 }
 
 .currency-details p {
     font-size: 18px;
-    color: #ecf0f1; /* Light Grayish Blue */
+    color: #ecf0f1;
+    /* Light Grayish Blue */
     margin: 5px 0;
 }
 
 .items-container {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);  /* 3 equal-width columns */
+    grid-template-columns: repeat(3, 1fr);
+    /* 3 equal-width columns */
     gap: 30px;
     margin-top: 40px;
-    grid-auto-rows: auto; /* Ensure that row heights adjust automatically */
-    align-items: flex-start; /* Align items at the top of each column */
+    grid-auto-rows: auto;
+    /* Ensure that row heights adjust automatically */
+    align-items: flex-start;
+    /* Align items at the top of each column */
 }
 
-.background-column, .avatar-column, .cards-column {
+.background-column,
+.avatar-column,
+.cards-column {
     padding: 20px;
-    background-color: #2c3e50; /* Dark Blue-Gray */
+    background-color: #2c3e50;
+    /* Dark Blue-Gray */
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-    color: #f1c40f; /* Gold */
+    color: #f1c40f;
+    /* Gold */
     justify-content: center;
     align-items: center;
 
@@ -235,7 +282,8 @@ export default {
 .item-column h3 {
     font-size: 24px;
     text-align: center;
-    color: #f1c40f; /* Gold */
+    color: #f1c40f;
+    /* Gold */
     margin-bottom: 20px;
 }
 
@@ -261,7 +309,8 @@ export default {
 
 .item h4 {
     font-size: 20px;
-    color: #34495e; /* Steel Blue */
+    color: #34495e;
+    /* Steel Blue */
     margin-bottom: 10px;
 }
 
@@ -275,20 +324,23 @@ export default {
 
 .price {
     font-size: 16px;
-    color: #34495e; /* Steel Blue */
+    color: #34495e;
+    /* Steel Blue */
     margin-bottom: 20px;
 }
 
 .currency-price {
     font-weight: bold;
-    color: #e67e22; /* Warm Orange */
+    color: #e67e22;
+    /* Warm Orange */
 }
 
 button {
     padding: 10px 20px;
     font-size: 16px;
     color: white;
-    background-color: #27ae60; /* Teal */
+    background-color: #27ae60;
+    /* Teal */
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -297,12 +349,13 @@ button {
 }
 
 button:hover {
-    background-color: #2ecc71; /* Lighter Teal */
+    background-color: #2ecc71;
+    /* Lighter Teal */
 }
 
 button:disabled {
-    background-color: #bdc3c7; /* Silver Gray */
+    background-color: #bdc3c7;
+    /* Silver Gray */
     cursor: not-allowed;
 }
-
 </style>

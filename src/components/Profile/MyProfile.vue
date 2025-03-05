@@ -14,32 +14,32 @@
     </section>
 
     <section class="high-scores">
-  <h2>High Scores</h2>
-  <div class="score-item">
-    <span class="game-name">Hangman:</span> 
-    <span class="score">{{ HangmanHigh }}</span>
-  </div>
-  <div class="score-item">
-    <span class="game-name">Alpha Arena:</span> 
-    <span class="score">{{ AlphaArenaHigh }}</span>
-  </div>
-  <div class="score-item">
-    <span class="game-name">Terminology Twisters:</span>
-    <span class="score">{{ TerminologyTwistersHigh }}</span>
-  </div>
-  <div class="score-item">
-    <span class="game-name">Click-a-Palooza:</span> 
-    <span class="score">{{ ClickaPaloozaHigh }}</span>
-  </div>
-  <div class="score-item">
-    <span class="game-name">Tiles of Terror:</span> 
-    <span class="score">{{ TilesofTerrorHigh }}</span>
-  </div>
-  <div class="score-item">
-    <span class="game-name">Copy Cat:</span> 
-    <span class="score">{{ CopyCatHigh }}</span>
-  </div>
-</section>
+      <h2>High Scores</h2>
+      <div class="score-item">
+        <span class="game-name">Hangman:</span>
+        <span class="score">{{ HangmanHigh }}</span>
+      </div>
+      <div class="score-item">
+        <span class="game-name">Alpha Arena:</span>
+        <span class="score">{{ AlphaArenaHigh }}</span>
+      </div>
+      <div class="score-item">
+        <span class="game-name">Terminology Twisters:</span>
+        <span class="score">{{ TerminologyTwistersHigh }}</span>
+      </div>
+      <div class="score-item">
+        <span class="game-name">Click-a-Palooza:</span>
+        <span class="score">{{ ClickaPaloozaHigh }}</span>
+      </div>
+      <div class="score-item">
+        <span class="game-name">Tiles of Terror:</span>
+        <span class="score">{{ TilesofTerrorHigh }}</span>
+      </div>
+      <div class="score-item">
+        <span class="game-name">Copy Cat:</span>
+        <span class="score">{{ CopyCatHigh }}</span>
+      </div>
+    </section>
 
 
     <section v-if="user" class="cosmetics-section">
@@ -136,26 +136,27 @@ export default {
     // Fetch high scores function inside setup()
     const fetchHighScores = async (userId) => {
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-      try {
-        let response = await axios.get(`${API_URL}/leaderboard/${userId}/Hangman`);
-        HangmanHigh.value = response.data ? response.data[0].score : 0;
+      const games = ['Hangman', 'Alpha Arena', 'Terminology Twisters', 'Click-a-Palooza', 'Tiles of Terror', 'Copy Cat'];
 
-        response = await axios.get(`${API_URL}/leaderboard/${userId}/Alpha Arena`);
-        AlphaArenaHigh.value = response.data ? response.data[0].score : 0;
+      // Mapping for high scores
+      const highScores = {
+        "Hangman": HangmanHigh,
+        "Alpha Arena": AlphaArenaHigh,
+        "Terminology Twisters": TerminologyTwistersHigh,
+        "Click-a-Palooza": ClickaPaloozaHigh,
+        "Tiles of Terror": TilesofTerrorHigh,
+        "Copy Cat": CopyCatHigh
+      };
 
-        response = await axios.get(`${API_URL}/leaderboard/${userId}/Terminology Twisters`);
-        TerminologyTwistersHigh.value = response.data ? response.data[0].score : 0;
-
-        response = await axios.get(`${API_URL}/leaderboard/${userId}/Click-a-Palooza`);
-        ClickaPaloozaHigh.value = response.data ? response.data[0].score : 0;
-
-        response = await axios.get(`${API_URL}/leaderboard/${userId}/Tiles of Terror`);
-        TilesofTerrorHigh.value = response.data ? response.data[0].score : 0;
-
-        response = await axios.get(`${API_URL}/leaderboard/${userId}/Copy Cat`);
-        CopyCatHigh.value = response.data ? response.data[0].score : 0;
-      } catch (error) {
-        console.error("Error fetching high scores:", error);
+      // Loop through each game and fetch its high score
+      for (const game of games) {
+        try {
+          const response = await axios.get(`${API_URL}/leaderboard/${userId}/${game}`);
+          highScores[game].value = response.data?.[0]?.score ?? 0;
+        } catch (error) {
+          console.error(`Error fetching high score for ${game}:`, error);
+          highScores[game].value = 0;
+        }
       }
     };
 
@@ -238,6 +239,7 @@ export default {
 };
 </script>
 
+
 <style scoped>
 .profile-page {
   max-width: 1200px;
@@ -261,6 +263,7 @@ export default {
   font-size: 32px;
   font-weight: 600;
 }
+
 .high-scores {
   background-color: #f8f8f8;
   padding: 20px;

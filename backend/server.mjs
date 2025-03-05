@@ -24,10 +24,10 @@ app.options('*', cors(corsOptions));
 app.use(bodyParser.json());
 app.use('/leaderboard', leaderboardRoutes);
 
-app.use((req, res, next) => {
-  console.log(`${req.method} request to ${req.url}`);
-  next();
-});
+// app.use((req, res, next) => {
+//   console.log(`${req.method} request to ${req.url}`);
+//   next();
+// });
 
 app.get('/', (req, res) => {
   console.log('Base request works /')
@@ -267,6 +267,18 @@ app.get("/store/:user_id", async (req,res) => {
     res.json(avilableItems);
   }catch(error){
     console.error("Error fetching store items:", error);
+    res.status(500).json({message: "Server Error"});
+  }
+});
+//Display Items from the store 
+app.get("/allstore", async (req,res) => {
+  try{
+    const avilableItems = await db.any(
+      `select * from items`
+    );
+    res.json(avilableItems);
+  }catch(error){
+    console.error("Error fetching all store items:", error);
     res.status(500).json({message: "Server Error"});
   }
 });

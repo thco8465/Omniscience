@@ -45,7 +45,7 @@ export default {
         const user = createUser(this.newAccount.username, this.newAccount.email, this.newAccount.password);
         console.log(`before axios post, ${API_URL}/createAccount`)
         const response = await axios.post(`${API_URL}/createAccount`, user, {
-          withCredentials: true, // If you need to send cookies or authentication tokens
+           // If you need to send cookies or authentication tokens
         });
         console.log(`after axios`)
         if (response.data.success) {

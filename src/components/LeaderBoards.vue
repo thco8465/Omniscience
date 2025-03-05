@@ -57,6 +57,7 @@ export default {
 
             for (const game of this.games) {
                 try {
+                    console.log('trying for ', game)
                     const response = await axios.get(`${API_URL}/leaderboard/${game.displayName}`);
                     this.setLeaderboardData(game.displayName, response.data);
                 } catch (error) {

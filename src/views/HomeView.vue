@@ -1,9 +1,14 @@
-<script setup>
-//import MyMenu from '../components/MainMenu.vue'
-</script>
-
 <template>
   <main>
-    <h1>Create an account and login to earn medals, save progress, and customize your profile!</h1>
+    <MyHome/>
   </main>
 </template>
+<script>
+import MyHome from '../components/MyHome.vue';
+
+export default{
+    components: {
+        MyHome,
+    }
+}
+</script>

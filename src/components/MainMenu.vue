@@ -5,7 +5,7 @@
         <div class="nav-container">
           <div class="nav-section">
             <RouterLink to="/">Home</RouterLink>
-            <div class="nav-section dropdown">
+            <!-- <div class="nav-section dropdown">
               <button class="dropbtn">Games</button>
               <div class="dropdown-content">
                 <RouterLink to="/hangView">Hang Man</RouterLink>
@@ -15,14 +15,14 @@
                 <RouterLink to="/Tiles">Tiles of Terror</RouterLink>
                 <RouterLink to="/Repeater">Copy Cat</RouterLink>
               </div>
-            </div>
+            </div> -->
             <RouterLink v-if="userId === -1" to="/CreateAccount">Create Account</RouterLink>
             <RouterLink v-if="userId === -1" to="/Login">Login</RouterLink>
           </div>
           <div class="nav-section">
-            <RouterLink to="/Achievements">Achievements</RouterLink>
+            <RouterLink v-if="userId !== -1" to="/Achievements">Achievements</RouterLink>
             <RouterLink to="/Store">Store</RouterLink>
-            <RouterLink to="/Profile">Profile</RouterLink>
+            <RouterLink v-if="userId !== -1" to="/Profile">Profile</RouterLink>
             <RouterLink to="/Leaderboards">Leaderboards</RouterLink>
           </div>
           <div class="logout-container">
