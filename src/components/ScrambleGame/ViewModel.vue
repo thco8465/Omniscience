@@ -145,7 +145,6 @@ export default {
         // Fetch current achievements from the database
         const response = await axios.get(`${API_URL}/achievements/${userId}`);
         const currentAchievements = response.data || { score: 0, bronze: 0, silver: 0, gold: 0 };
-        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
         // Calculate medals based on the current session's score
         let bronze = currentAchievements.bronze;
         let silver = currentAchievements.silver;
