@@ -180,9 +180,11 @@ export default {
       const userId = this.$store.state.user.id;
       const gameName = 'Copy Cat';
       const userScore = this.score;
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 
       try {
-        const response = await axios.post('/leaderboard/' + gameName, {
+        const response = await axios.post(`${API_URL}/leaderboard/` + gameName, {
           user_id: userId,
           score: userScore,
         });
