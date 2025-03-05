@@ -43,7 +43,9 @@ export default {
       console.log(API_URL)
       try {
         const user = createUser(this.newAccount.username, this.newAccount.email, this.newAccount.password);
-        const response = await axios.post(`${API_URL}/createAccount`, user);
+        const response = await axios.post(`${API_URL}/createAccount`, user, {
+          withCredentials: true, // If you need to send cookies or authentication tokens
+        });
         if (response.data.success) {
           console.log('Account created');
         } else {
