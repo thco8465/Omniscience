@@ -7,16 +7,23 @@ import db from './Database/db.mjs'; // Adjust the path accordingly
 import leaderboardRoutes from './endpoints/leaderboards.mjs'
 
 const app = express();
-// CORS setup (allow all origins)
-app.use(cors({
-  origin: '*',  // Allow all origins for testing purposes
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Include OPTIONS method
-  allowedHeaders: ['Content-Type', 'Authorization'] // Allow necessary headers
-}));
+const PORT = process.env.PORT || 10000;
+
+const corsOptions = {
+  origin: 'https://omniscience-1.onrender.com', // Your frontend URL
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true, // Allow cookies if you're using them for authentication
+};
+
+app.use(cors(corsOptions));  // Apply CORS to all routes
+
+// Allow pre-flight OPTIONS requests for all routes
+app.options('*', cors(corsOptions));  
+
 app.use(bodyParser.json());
 app.use('/leaderboard', leaderboardRoutes);
-const PORT = process.env.PORT || 10000;
-app.options('*', cors()); // Allow pre-flight requests for all routes
+
 app.use((req, res, next) => {
   console.log(`${req.method} request to ${req.url}`);
   next();
