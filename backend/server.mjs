@@ -10,7 +10,7 @@ const app = express();
 app.use(cors())
 app.use(bodyParser.json());
 app.use('/leaderboard', leaderboardRoutes);
-const port = process.env.PORT;
+const PORT = process.env.PORT;
 
 // Endpoint for account creation
 app.post('/createAccount', async (req, res) => {
@@ -326,6 +326,6 @@ app.post("/store/:user_id", async (req, res) => {
 });
 
 
-app.listen(port, () => {
-  console.log(`Proxy server running at http://localhost:${port}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`✅ Server is running on port ${PORT}`);
 });
