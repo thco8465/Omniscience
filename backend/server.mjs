@@ -12,9 +12,9 @@ app.use(bodyParser.json());
 app.use('/leaderboard', leaderboardRoutes);
 const PORT = process.env.PORT || 10000;
 
-app.get('/health', (req, res) => {
-  res.status(200).send('OK');
-});
+app.get('/', (req, res) => {
+  res.sendStatus(200)
+})
 
 process.on('uncaughtException', (err) => {
   console.error('❌ Uncaught Exception:', err);
