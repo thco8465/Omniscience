@@ -8,12 +8,11 @@
                     <li v-if="game.list.length === 0">
                         <span>No leaders for this game yet</span>
                     </li>
-                    <li v-for="(entry, index) in game.list" :key="entry.user_id" class="leaderboard-item">
+                    <li v-for="(entry, index) in game.list" :key="`${game.name}-${entry.user_id}-${index}`" class="leaderboard-item">
                         <div class="leaderboard-item-content">
-                            <!-- <img :src="entry.avatar" alt="User Avatar" class="avatar-image" /> -->
                             <div class="user-info">
                                 <span class="rank">{{ index + 1 }}.</span>
-                                <img :src="entry.avatar" alt="User Avatar" class="avatar-image" />
+                                <img v-if="entry.avatar" :src="entry.avatar" alt="" class="avatar-image" />
                                 <span class="username">{{ entry.username }}</span>
                                 <span class="score">{{ entry.score }}</span>
                             </div>
@@ -26,8 +25,8 @@
         </div>
     </div>
 </template>
+
 <script>
-import store from '@/store';
 import axios from 'axios';
 
 export default {
@@ -52,39 +51,32 @@ export default {
             const options = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true };
             return new Date(date).toLocaleString(undefined, options);
         },
+
         async fetchLeaderboard() {
-            const games = [
-                'Hangman',
-                'Alpha Arena',
-                'Terminology Twisters',
-                'Click-a-Palooza',
-                'Tiles of Terror',
-                'Copy Cat'
-            ];
             const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-            try {
-                // Loop through each game and fetch the leaderboard data
-                for (const game of games) {
-                    const response = await axios.get(`${API_URL}/leaderboard/${game}`);
-                    console.log(response.data)
-                    this.setLeaderboardData(game, response.data);
+
+            for (const game of this.games) {
+                try {
+                    const response = await axios.get(`${API_URL}/leaderboard/${game.displayName}`);
+                    this.setLeaderboardData(game.displayName, response.data);
+                } catch (error) {
+                    console.error(`Error fetching leaderboard for ${game.displayName}:`, error);
+                    this.setLeaderboardData(game.displayName, []); // Prevents errors in UI
                 }
-            } catch (error) {
-                console.error("Error fetching leaderboard data:", error);
             }
         },
 
-        setLeaderboardData(game, data) {
-            // Find the corresponding game object in the games array and set its list property
-            const gameObj = this.games.find(g => g.displayName === game);
+        setLeaderboardData(gameName, data) {
+            const gameObj = this.games.find(g => g.displayName === gameName);
             if (gameObj) {
-                gameObj.list = data;
-                console.log(`${game} leaderboard updated`, gameObj.list);
+                gameObj.list = Array.isArray(data) ? data : [];
+                console.log(`${gameName} leaderboard updated`, gameObj.list);
             }
         }
     }
 };
 </script>
+
 
 <style scoped>
 .leaderboard {
@@ -112,11 +104,13 @@ export default {
     /* Creates 3 columns */
     gap: 1rem;
 }
-.game-leaderboard{
+
+.game-leaderboard {
     background-color: #34495e;
     border-radius: 5px;
     padding: 5px 10px;
 }
+
 .leaderboard h1 {
     font-size: 1.8rem;
     color: gold;
@@ -249,5 +243,4 @@ ul li .no-leaders {
     color: #888;
     margin-left: 15px;
 }
-
 </style>
