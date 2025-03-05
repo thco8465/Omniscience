@@ -10,7 +10,7 @@ const app = express();
 const PORT = process.env.PORT || 10000;
 
 const corsOptions = {
-  origin: ['https://omniscience-1.onrender.com','https://omniscience.onrender.com', '*', 'https://omniscience.onrender.com/createAccount'], // Your frontend URL
+  origin: ['https://omniscience-1.onrender.com','https://omniscience.onrender.com', '*', 'https://omniscience.onrender.com/createAccount', 'https://omniscience-1.onrender.com/CreateAccount'], // Your frontend URL
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true, // Allow cookies if you're using them for authentication
