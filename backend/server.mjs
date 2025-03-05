@@ -22,14 +22,23 @@ app.get('/', (req, res) => {
 app.post('/createAccount', async (req, res) => {
   console.log('Inside create account endpoint')
   const { username, email, password } = req.body;
+  console.log('Got reqs')
 
   try {
+    console.log('Inside try')
+
     await db.none('INSERT INTO users(username, email, password) VALUES($1, $2, $3)', [username, email, password]);
     res.json({ success: true });
+    console.log('Success?')
+
   } catch (error) {
+    console.log('Error')
+
     console.error('Error creating account:', error);
     res.status(500).json({ success: false, error: error.message });
   }
+  console.log('Finished')
+
 });
 // Endpoint for user login
 app.post('/login', async (req, res) => {
