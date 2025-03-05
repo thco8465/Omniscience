@@ -12,6 +12,11 @@ app.use(bodyParser.json());
 app.use('/leaderboard', leaderboardRoutes);
 const PORT = process.env.PORT;
 
+app.get('/health', (req, res) => {
+  res.status(200).send('OK');
+});
+
+
 // Endpoint for account creation
 app.post('/createAccount', async (req, res) => {
   const { username, email, password } = req.body;
