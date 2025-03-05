@@ -13,19 +13,14 @@ app.use('/leaderboard', leaderboardRoutes);
 const PORT = process.env.PORT || 10000;
 
 app.get('/', (req, res) => {
+  console.log('Base request works /')
   res.sendStatus(200)
 })
 
-process.on('uncaughtException', (err) => {
-  console.error('❌ Uncaught Exception:', err);
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('❌ Unhandled Promise Rejection:', reason);
-});
 
 // Endpoint for account creation
 app.post('/createAccount', async (req, res) => {
+  console.log('Inside create account endpoint')
   const { username, email, password } = req.body;
 
   try {
