@@ -7,7 +7,7 @@ import db from './Database/db.mjs'; // Adjust the path accordingly
 import leaderboardRoutes from './endpoints/leaderboards.mjs'
 
 const app = express();
-app.use(cors())
+app.use(cors({ origin: '*' })); // Allow all origins (for testing)
 app.use(bodyParser.json());
 app.use('/leaderboard', leaderboardRoutes);
 const PORT = process.env.PORT || 10000;
