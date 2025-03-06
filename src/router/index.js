@@ -12,6 +12,7 @@ import CreateAccount from '../components/CreateAccount.vue'
 import Login from '../components/MyLogin.vue'
 import Store from '../views/MyStoreView.vue'
 import LeaderBoards from '../views/LeaderBoards.vue'
+import TwentyOne from '@/components/TwentyOne/twentyOne.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -79,7 +80,12 @@ const router = createRouter({
       path:'/Leaderboards',
       name: '/Leaderboards',
       component: LeaderBoards,
-    }
+    },
+    {
+      path: '/TwentyOne',
+      name: 'TwentyOne',
+      component: TwentyOne,
+    },
   ],
 })
 

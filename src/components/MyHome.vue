@@ -20,6 +20,7 @@ const games = [
   { name: 'Click-a-Palooza', route: '/ShapeClicker' },
   { name: 'Tiles of Terror', route: '/Tiles' },
   { name: 'Copy Cat', route: '/Repeater' },
+  {name: 'Twenty One', route: '/TwentyOne'},
 ];
 </script>
 

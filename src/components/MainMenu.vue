@@ -4,7 +4,6 @@
       <nav>
         <div class="nav-container">
           <div class="nav-section">
-            <RouterLink to="/">Home</RouterLink>
             <!-- <div class="nav-section dropdown">
               <button class="dropbtn">Games</button>
               <div class="dropdown-content">
@@ -16,14 +15,15 @@
                 <RouterLink to="/Repeater">Copy Cat</RouterLink>
               </div>
             </div> -->
-            <RouterLink v-if="userId === -1" to="/CreateAccount">Create Account</RouterLink>
-            <RouterLink v-if="userId === -1" to="/Login">Login</RouterLink>
+            <!-- <RouterLink v-if="userId === -1" to="/CreateAccount">Create Account</RouterLink> -->
           </div>
           <div class="nav-section">
-            <RouterLink v-if="userId !== -1" to="/Achievements">Achievements</RouterLink>
-            <RouterLink to="/Store">Store</RouterLink>
+            <RouterLink to="/">Home</RouterLink>
             <RouterLink v-if="userId !== -1" to="/Profile">Profile</RouterLink>
+            <RouterLink v-if="userId !== -1" to="/Achievements">Achievements</RouterLink>
             <RouterLink to="/Leaderboards">Leaderboards</RouterLink>
+            <RouterLink to="/Store">Store</RouterLink>
+            <RouterLink v-if="userId === -1" to="/Login">Login</RouterLink>
           </div>
           <div class="logout-container">
             <button class="logout" v-if="userId !== -1" @click="logout">Log out</button>
@@ -168,7 +168,7 @@ nav a.router-link-exact-active {
   font-family: 'Libre Baskerville', serif;
   display: flex;
   margin-left: auto; /* Aligns the logout button to the right */
-  margin-right: 30px;
+  margin-right: 40px;
 }
 
 .logout:hover {
