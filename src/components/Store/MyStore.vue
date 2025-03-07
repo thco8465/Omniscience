@@ -10,6 +10,10 @@
                 <p><strong>Silver:</strong> {{ silver }} 🥈</p>
                 <p><strong>Bronze:</strong> {{ bronze }} 🥉</p>
             </div>
+<<<<<<< HEAD
+=======
+            <button @click="redirectToConverter">Convert Currency</button>
+>>>>>>> 97a0620 (recovered i think)
         </div>
 
         <div class="items-container">
@@ -95,6 +99,12 @@ export default {
         }
     },
     methods: {
+<<<<<<< HEAD
+=======
+        redirectToConverter(){
+            this.$router.push({name: 'ConvertCurr'})
+        },
+>>>>>>> 97a0620 (recovered i think)
         async fetchAchievements() {
             const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
             if (!this.user_id) {

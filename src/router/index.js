@@ -13,6 +13,7 @@ import Login from '../components/MyLogin.vue'
 import Store from '../views/MyStoreView.vue'
 import LeaderBoards from '../views/LeaderBoards.vue'
 import TwentyOne from '@/components/TwentyOne/twentyOne.vue'
+import ConvertCurr from '@/components/ConvertCurr.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -86,6 +87,11 @@ const router = createRouter({
       name: 'TwentyOne',
       component: TwentyOne,
     },
+    {
+      path: '/ConvertCurr',
+      name: 'ConvertCurr',
+      component: ConvertCurr,
+    }
   ],
 })
 

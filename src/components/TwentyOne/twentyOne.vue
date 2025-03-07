@@ -398,7 +398,11 @@ export default {
 };
 </script>
 
+<<<<<<< HEAD
 <style>
+=======
+<style scoped>
+>>>>>>> 97a0620 (recovered i think)
 .game-container {
     text-align: center;
     max-width: 800px;
