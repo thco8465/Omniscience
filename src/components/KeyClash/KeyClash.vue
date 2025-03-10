@@ -6,6 +6,7 @@
           <span class="stage">Stage: {{ currentStage }}/{{ maxStages }}</span>
           <span class="timer">Time: {{ formatTime(stageTimer) }}</span>
         </div>
+        <!-- test -->
         <div v-else class="game-over">
           <h2>Game Over!</h2>
           <p>{{ gameOverMessage }}</p>
