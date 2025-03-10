@@ -99,12 +99,9 @@ export default {
         }
     },
     methods: {
-<<<<<<< HEAD
-=======
         redirectToConverter(){
             this.$router.push({name: 'ConvertCurr'})
         },
->>>>>>> 97a0620 (recovered i think)
         async fetchAchievements() {
             const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
             if (!this.user_id) {

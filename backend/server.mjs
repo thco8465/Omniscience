@@ -5,6 +5,7 @@ import bodyParser from 'body-parser';
 import db from './Database/db.mjs'; // Adjust the path accordingly
 
 import leaderboardRoutes from './endpoints/leaderboards.mjs'
+import keyClashRoutes from './endpoints/keyClash.mjs'
 
 const app = express();
 const PORT = process.env.PORT || 10000;
@@ -23,6 +24,7 @@ app.options('*', cors(corsOptions));
 
 app.use(bodyParser.json());
 app.use('/leaderboard', leaderboardRoutes);
+app.use('/keyClash', keyClashRoutes);
 
 // app.use((req, res, next) => {
 //   console.log(`${req.method} request to ${req.url}`);
