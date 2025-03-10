@@ -38,7 +38,8 @@ export default {
                 { name: "terminologyTwisters", displayName: "Terminology Twisters", list: [] },
                 { name: "clickPalooza", displayName: "Click-a-Palooza", list: [] },
                 { name: "tilesOfTerror", displayName: "Tiles of Terror", list: [] },
-                { name: "copyCat", displayName: "Copy Cat", list: [] }
+                { name: "copyCat", displayName: "Copy Cat", list: [] },
+                {name: "Key Clash", displayName: "Key Clash", list: []}
             ],
             currentUserId: this.$store.state.user ? this.$store.state.user.id : -1,
         };

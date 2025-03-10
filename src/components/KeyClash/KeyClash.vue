@@ -1,7 +1,7 @@
 <template>
     <div class="container">
       <div class="game-header">
-        <h1>Key Clash (local)</h1>
+        <h1>Key Clash (local multiplayer)</h1>
         <div v-if="currentStage <= maxStages" class="stage-info">
           <span class="stage">Stage: {{ currentStage }}/{{ maxStages }}</span>
           <span class="timer">Time: {{ formatTime(stageTimer) }}</span>

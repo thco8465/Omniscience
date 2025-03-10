@@ -21,7 +21,8 @@ const games = [
   { name: 'Tiles of Terror', route: '/Tiles' },
   { name: 'Copy Cat', route: '/Repeater' },
   {name: 'Twenty One', route: '/TwentyOne'},
-  {name: 'Key Clash', route: '/KeyClash'}
+  {name: 'Key Clash', route: '/KeyClash'},
+  {name: 'Key Clash Single', route: '/KeyClashSingle'},
 ];
 </script>
 

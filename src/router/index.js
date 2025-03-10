@@ -15,6 +15,7 @@ import LeaderBoards from '../views/LeaderBoards.vue'
 import TwentyOne from '@/components/TwentyOne/twentyOne.vue'
 import ConvertCurr from '@/components/ConvertCurr.vue'
 import KeyClash from '@/components/KeyClash/KeyClash.vue'
+import KeyClashSingle from '@/components/KeyClash/KeyClashSingle.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -97,6 +98,11 @@ const router = createRouter({
       path:'/KeyClash',
       name: 'KeyClash',
       component: KeyClash,
+    },
+    {
+      path: '/KeyClashSingle',
+      name: 'KeyClashSingle',
+      component: KeyClashSingle,
     }
   ],
 })
