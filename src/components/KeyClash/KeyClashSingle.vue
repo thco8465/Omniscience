@@ -67,18 +67,18 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue';
-import {useStore} from 'vuex'
+import { useStore } from 'vuex';
 import axios from 'axios';
 
-const store = useStore()
+const store = useStore();
 
 // Game constants
 const keyTypes = ['left', 'up', 'down', 'right'];
 const MAX_STAGES = 5;
 const TARGET_ZONE_POSITION = 450; // Position of the target zone from the top
-const TARGET_ZONE_TOLERANCE = 30; // Pixels of tolerance for hitting the target
+const TARGET_ZONE_TOLERANCE = 20; // Reduced tolerance for more accuracy
 const STAGE_DURATION = 20; // Duration of each stage in seconds
-const VISUAL_OFFSET = -10
+const VISUAL_OFFSET = -10;
 
 // Game state
 const maxStages = ref(MAX_STAGES);
@@ -90,201 +90,203 @@ const stageTimer = ref(STAGE_DURATION);
 const stageActive = ref(false);
 const stageWinner = ref(0);
 const gameOverMessage = ref('');
-const totalScore = ref(0)
-const medal = ref('')
-const userId = store.state.user ? store.state.user.id : -1
-
-
-// References to game areas for dimensions
-const player1GameArea = ref(null);
+const totalScore = ref(0);
+const medal = ref('');
+const userId = store.state.user ? store.state.user.id : -1;
 
 // Game timers and intervals
+let lastFrameTime = 0;
 let keyGenerationInterval = null;
-let gameUpdateInterval = null;
 let stageTimerInterval = null;
 
-// Computed properties
+// Game mechanics
 const gameSpeed = computed(() => {
-    // Increase speed based on stage number
-    return 2 + (currentStage.value - 1) * 0.5;
+  // Increase speed based on stage number
+  return 2 + (currentStage.value - 1) * 0.5;
 });
 
 const keyFrequency = computed(() => {
-    // Decrease time between keys as stages progress
-    return 1000 - (currentStage.value - 1) * 150;
+  // Decrease time between keys as stages progress
+  return 1000 - (currentStage.value - 1) * 150;
 });
 
-// Game mechanics
 const startStage = () => {
-    totalScore.value += player1Score.value
-    player1Score.value = 0;
-    player1Keys.value = [];
-    stageTimer.value = STAGE_DURATION;
-    stageActive.value = true;
-    stageWinner.value = null;
+  totalScore.value += player1Score.value;
+  player1Score.value = 0;
+  player1Keys.value = [];
+  stageTimer.value = STAGE_DURATION;
+  stageActive.value = true;
+  stageWinner.value = null;
 
+  // Start key generation
+  keyGenerationInterval = setInterval(generateKeys, keyFrequency.value);
 
-    // Start key generation
-    keyGenerationInterval = setInterval(generateKeys, keyFrequency.value);
+  // Start game update loop
+  requestAnimationFrame(updateGame);
 
-    // Start game update loop
-    gameUpdateInterval = setInterval(updateGame, 40); // ~60fps
-
-    // Start stage timer
-    stageTimerInterval = setInterval(() => {
-        stageTimer.value--;
-        if (stageTimer.value <= 0) {
-            endStage();
-        }
-    }, 1000);
+  // Start stage timer
+  stageTimerInterval = setInterval(() => {
+    stageTimer.value--;
+    if (stageTimer.value <= 0) {
+      endStage();
+    }
+  }, 1000);
 };
 
 const endStage = () => {
-    stageActive.value = false;
-    clearInterval(keyGenerationInterval);
-    clearInterval(gameUpdateInterval);
-    clearInterval(stageTimerInterval);
-    stageWinner.value = 1;
-    // Check if game is over
+  stageActive.value = false;
+  clearInterval(keyGenerationInterval);
+  clearInterval(stageTimerInterval);
+  stageWinner.value = 1;
 
-    if (currentStage.value < maxStages.value) {
-        // Move to next stage after a delay
-        setTimeout(() => {
-            currentStage.value++;
-            startStage();
-        }, 3000);
-    } else {
-        endGame(1)
-    }
-
+  if (currentStage.value < maxStages.value) {
+    // Move to next stage after a delay
+    setTimeout(() => {
+      currentStage.value++;
+      startStage();
+    }, 3000);
+  } else {
+    endGame(1);
+  }
 };
 
 const endGame = async (winner) => {
-    currentStage.value = maxStages.value + 1; // Set to value that shows game over screen
-    gameOverMessage.value = `Total Score: ` + totalScore.value;
+  currentStage.value = maxStages.value + 1; // Set to value that shows game over screen
+  gameOverMessage.value = `Total Score: ` + totalScore.value;
 
-    await submitScoreToLeaderboard();
-    await updateAchievements();
+  await submitScoreToLeaderboard();
+  await updateAchievements();
 };
 
 const resetGame = () => {
-    currentStage.value = 1;
-    player1Wins.value = 0;
-    stageWinner.value = 0;
-    startStage();
+  currentStage.value = 1;
+  player1Wins.value = 0;
+  stageWinner.value = 0;
+  startStage();
 };
 
 // Key generation and management
 const generateKeys = () => {
-    if (!stageActive.value) return;
+  if (!stageActive.value) return;
 
-    // Create a pattern to ensure both players get the same sequence
-    const keyType = keyTypes[Math.floor(Math.random() * keyTypes.length)];
+  // Create a pattern to ensure both players get the same sequence
+  const keyType = keyTypes[Math.floor(Math.random() * keyTypes.length)];
 
-    const key1 = {
-        id: Date.now() + Math.random(),
-        type: keyType,
-        position: 0,
-        status: 'active'
-    };
+  const key1 = {
+    id: Date.now() + Math.random(),
+    type: keyType,
+    position: 0,
+    status: 'active',
+  };
 
-    player1Keys.value.push(key1);
+  player1Keys.value.push(key1);
 };
 
-const updateGame = () => {
-    if (!stageActive.value) return;
+const updateGame = (timestamp) => {
+  if (!stageActive.value) return;
 
-    // Update player 1 keys
-    player1Keys.value = player1Keys.value.filter(key => {
-        key.position += gameSpeed.value;
+  // Calculate delta time (elapsed time between frames)
+  const deltaTime = timestamp - lastFrameTime;
+  lastFrameTime = timestamp;
 
-        // Remove keys that went past the bottom
-        if (key.position > TARGET_ZONE_POSITION + TARGET_ZONE_TOLERANCE && key.status === 'active') {
-            key.status = 'missed';
-            setTimeout(() => {
-                player1Keys.value = player1Keys.value.filter(k => k.id !== key.id);
-            }, 300);
-            return true;
-        }
+  // Update player 1 keys
+  player1Keys.value = player1Keys.value.filter((key) => {
+    key.position += gameSpeed.value * (deltaTime / 16.67); // Adjust position with time delta for smooth movement
 
-        // Keep only active or temporarily showing hit/missed keys
-        return key.status === 'active' || (key.status !== 'active' && key.position < TARGET_ZONE_POSITION + 100);
-    });
+    // Remove keys that went past the bottom
+    if (key.position > TARGET_ZONE_POSITION + TARGET_ZONE_TOLERANCE && key.status === 'active') {
+      key.status = 'missed';
+      setTimeout(() => {
+        player1Keys.value = player1Keys.value.filter((k) => k.id !== key.id);
+      }, 300);
+      return true;
+    }
+
+    // Keep only active or temporarily showing hit/missed keys
+    return key.status === 'active' || (key.status !== 'active' && key.position < TARGET_ZONE_POSITION + 100);
+  });
+
+  // Request the next animation frame for smoother updates
+  requestAnimationFrame(updateGame);
 };
 
 // Key press handling
 const handleKeyPress = (event) => {
-    if (!stageActive.value) return;
-    event.preventDefault();
+  if (!stageActive.value) return;
+  event.preventDefault();
 
-    // Player 1 controls (WASD)
-    if (event.key === 'ArrowLeft') {
-        checkKeyHit(player1Keys, 'left', 1);
-    } else if (event.key === 'ArrowUp') {
-        checkKeyHit(player1Keys, 'up', 1);
-    } else if (event.key === 'ArrowDown') {
-        checkKeyHit(player1Keys, 'down', 1);
-    } else if (event.key === 'ArrowRight') {
-        checkKeyHit(player1Keys, 'right', 1);
-    }
+  // Player 1 controls (Arrow keys)
+  if (event.key === 'ArrowLeft') {
+    checkKeyHit(player1Keys, 'left', 1);
+  } else if (event.key === 'ArrowUp') {
+    checkKeyHit(player1Keys, 'up', 1);
+  } else if (event.key === 'ArrowDown') {
+    checkKeyHit(player1Keys, 'down', 1);
+  } else if (event.key === 'ArrowRight') {
+    checkKeyHit(player1Keys, 'right', 1);
+  }
 };
 
 const checkKeyHit = (playerKeys, keyType, playerNumber) => {
-    // Find all active keys of the matching type within the target zone
-    const targetKeys = playerKeys.value.filter(key =>
-        key.type === keyType &&
-        key.status === 'active' &&
-        key.position >= (TARGET_ZONE_POSITION-VISUAL_OFFSET) - TARGET_ZONE_TOLERANCE &&
-        key.position <= (TARGET_ZONE_POSITION-VISUAL_OFFSET) + TARGET_ZONE_TOLERANCE
+  // Find all active keys of the matching type within the target zone
+  const targetKeys = playerKeys.value.filter(
+    (key) =>
+      key.type === keyType &&
+      key.status === 'active' &&
+      key.position >= TARGET_ZONE_POSITION - TARGET_ZONE_TOLERANCE &&
+      key.position <= TARGET_ZONE_POSITION + TARGET_ZONE_TOLERANCE
+  );
+
+  if (targetKeys.length > 0) {
+    // Sort by position to get the closest to target (ascending order)
+    targetKeys.sort(
+      (a, b) =>
+        Math.abs(TARGET_ZONE_POSITION - a.position) -
+        Math.abs(TARGET_ZONE_POSITION - b.position)
     );
 
-    if (targetKeys.length > 0) {
-        // Sort by position to get the closest to target (ascending order)
-        targetKeys.sort((a, b) => Math.abs((TARGET_ZONE_POSITION-VISUAL_OFFSET) - a.position) - Math.abs((TARGET_ZONE_POSITION-VISUAL_OFFSET) - b.position));
+    // Get the closest key (first in the sorted array)
+    const key = targetKeys[0];
 
-        // Get the closest key (first in the sorted array)
-        const key = targetKeys[0];
+    // Calculate score based on accuracy (closer to target = higher score)
+    const accuracy = Math.abs(TARGET_ZONE_POSITION - key.position);
+    const scoreForHit = Math.max(100 - Math.floor(accuracy * 3), 10);
 
-        // Calculate score based on accuracy (closer to target = higher score)
-        const accuracy = Math.abs((TARGET_ZONE_POSITION-VISUAL_OFFSET) - key.position);
-        const scoreForHit = Math.max(100 - Math.floor(accuracy * 3), 10);
-        console.log(accuracy, scoreForHit);
+    // Mark key as hit and remove after a short delay
+    key.status = 'hit';
+    setTimeout(() => {
+      playerKeys.value = playerKeys.value.filter((k) => k.id !== key.id);
+    }, 300);
 
-        // Mark key as hit and remove after a short delay
-        key.status = 'hit';
-        setTimeout(() => {
-            playerKeys.value = playerKeys.value.filter(k => k.id !== key.id);
-        }, 300);
-
-        // Update the score for the player
-        if (playerNumber === 1) {
-            player1Score.value += scoreForHit;
-        }
+    // Update the score for the player
+    if (playerNumber === 1) {
+      player1Score.value += scoreForHit;
     }
+  }
 };
-
 
 // Utility functions
 const getKeyIcon = (type) => {
-    switch (type) {
-        case 'left':
-            return 'fas fa-arrow-left';
-        case 'up':
-            return 'fas fa-arrow-up';
-        case 'down':
-            return 'fas fa-arrow-down';
-        case 'right':
-            return 'fas fa-arrow-right';
-        default:
-            return '';
-    }
+  switch (type) {
+    case 'left':
+      return 'fas fa-arrow-left';
+    case 'up':
+      return 'fas fa-arrow-up';
+    case 'down':
+      return 'fas fa-arrow-down';
+    case 'right':
+      return 'fas fa-arrow-right';
+    default:
+      return '';
+  }
 };
 
 const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
 };
+
 
 // New functions for achievements and leaderboard
 const updateAchievements = async () => {
