@@ -16,6 +16,7 @@ import TwentyOne from '@/components/TwentyOne/twentyOne.vue'
 import ConvertCurr from '@/components/ConvertCurr.vue'
 import KeyClash from '@/components/KeyClash/KeyClash.vue'
 import KeyClashSingle from '@/components/KeyClash/KeyClashSingle.vue'
+import KeyClashOnline from '@/components/KeyClash/KeyClashOnline.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -103,6 +104,11 @@ const router = createRouter({
       path: '/KeyClashSingle',
       name: 'KeyClashSingle',
       component: KeyClashSingle,
+    },
+    {
+      path: '/KeyClashOnline',
+      name: 'KeyClashOnline',
+      component: KeyClashOnline
     }
   ],
 })

@@ -2,39 +2,32 @@ import express from 'express';
 import fetch from 'node-fetch';
 import cors from 'cors';
 import bodyParser from 'body-parser';
-import db from './Database/db.mjs'; // Adjust the path accordingly
+import { createServer } from 'http'; // Import createServer
+import db from './Database/db.mjs';
 
-import leaderboardRoutes from './endpoints/leaderboards.mjs'
-import keyClashRoutes from './endpoints/keyClash.mjs'
+import leaderboardRoutes from './endpoints/leaderboards.mjs';
+import { router as keyClashRoutes, initializeKeyClash} from './endpoints/keyClash.mjs'; // Import WebSocket server
 
 const app = express();
 const PORT = process.env.PORT || 10000;
+const httpServer = createServer(app); // Create an HTTP server for WebSockets
 
 const corsOptions = {
-  origin: '*',//['https://omniscience-1.onrender.com','https://omniscience.onrender.com', '*'], // Your frontend URL
+  origin: '*', // Adjust as needed
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true, // Allow cookies if you're using them for authentication
+  credentials: true,
 };
 
-app.use(cors(corsOptions));  // Apply CORS to all routes
-
-// Allow pre-flight OPTIONS requests for all routes
-app.options('*', cors(corsOptions));  
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 app.use(bodyParser.json());
 app.use('/leaderboard', leaderboardRoutes);
 app.use('/keyClash', keyClashRoutes);
 
-// app.use((req, res, next) => {
-//   console.log(`${req.method} request to ${req.url}`);
-//   next();
-// });
-
-app.get('/', (req, res) => {
-  console.log('Base request works /')
-  res.sendStatus(200)
-})
+// Attach WebSocket server to the same HTTP server
+initializeKeyClash(httpServer)
 
 app.options('/createAccount', cors());  // Handle pre-flight for createAccount endpoint
 
@@ -374,6 +367,10 @@ app.post("/store/:user_id", async (req, res) => {
 });
 
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`✅ Server is running on port ${PORT}`);
+// app.listen(PORT, '0.0.0.0', () => {
+//   console.log(`✅ Server is running on port ${PORT}`);
+// });
+// Start the server with WebSockets
+httpServer.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on port ${PORT}`);
 });
