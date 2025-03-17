@@ -22,7 +22,7 @@
             </div>
 
             <!-- Show game screen when both players are ready -->
-            <div v-else-if="gameStarted && currentStage <= maxStages" class="stage-info">
+            <div v-else-if="gameStarted && !gameOverMessage" class="stage-info">
                 <span class="stage">Stage: {{ currentStage }}/{{ maxStages }}</span>
                 <span class="timer">Time: {{ formatTime(stageTimer) }}</span>
             </div>
@@ -38,9 +38,10 @@
         <div class="game-container" v-if="gameStarted">
             <div class="screen" :class="{ 'winner': stageWinner === 1 }">
                 <div class="player-info">
-                    <h2>Player 1</h2>
-                    <div class="score">Score: {{ scores.player1 }}</div>
-                    <div class="lives">Lives: {{ maxStages - wins.player2 }}</div>
+                    <h2>{{ usernames.player1 }}</h2>
+                    <div class="score">Total Score: {{ total_scores.player1 }}</div>
+                    <div class="score">Stage Score: {{ scores.player1 }}</div>
+                    <div class="lives">Lives: {{ 3 - wins.player2 }}</div>
                 </div>
                 <div class="game-area" ref="player1GameArea">
                     <div class="key-lanes">
@@ -84,9 +85,10 @@
 
             <div class="screen" :class="{ 'winner': stageWinner === 2 }">
                 <div class="player-info">
-                    <h2>Player 2</h2>
-                    <div class="score">Score: {{ scores.player2 }}</div>
-                    <div class="lives">Lives: {{ maxStages - wins.player1 }}</div>
+                    <h2>{{ usernames.player2 }}</h2>
+                    <div class="score">Total Score: {{ total_scores.player2 }}</div>
+                    <div class="score">Stage Score: {{ scores.player2 }}</div>
+                    <div class="lives">Lives: {{ 3 - wins.player1 }}</div>
                 </div>
                 <div class="game-area" ref="player2GameArea">
                     <div class="key-lanes">
@@ -134,9 +136,11 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { io } from 'socket.io-client';
+import { useStore } from "vuex";
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 const socket = io(API_URL, { transports: ['websocket'] });
+const store = useStore();
 
 // Game constants
 const keyTypes = ['left', 'up', 'down', 'right'];
@@ -160,6 +164,9 @@ const stageTimer = ref(STAGE_DURATION);
 const stageActive = ref(false);
 const stageWinner = ref(0);
 const gameOverMessage = ref('');
+const total_scores = ref({ player1: 0, player2: 0 })
+const userId = store.state.user ? store.state.user.id : -1;
+const usernames = ref({ player1: 'player1', player2: 'player' })
 
 // Game timers and intervals
 let keyGenerationInterval = null;
@@ -177,15 +184,15 @@ const keyFrequency = computed(() => {
     return 1000 - (currentStage.value - 1) * 150;
 });
 
-
 // Player readiness
 const setPlayerReady = () => {
     if (playerID.value) {
-        // console.log('playerReady', playerID.value)
-        socket.emit('playerReady', playerID.value);
+        socket.emit('playerReady', playerID.value, userId);
         if (playerID.value === 'player1') {
+            // socket.emit('player1Ready')
             player1Ready.value = true;
         } else {
+            // socket.emit('player2Ready')
             player2Ready.value = true;
         }
         checkStartGame();
@@ -194,11 +201,11 @@ const setPlayerReady = () => {
 
 const checkStartGame = () => {
     if (player1Ready.value && player2Ready.value) {
-        gameStarted.value = true
-        // console.log('startGame')
-        socket.emit('startGame')
+        // Don't set gameStarted locally, wait for server confirmation
+        socket.emit('getUsernames'); // Request usernames
+        socket.emit('startGame');
     }
-}
+};
 
 // Game mechanics
 const startStage = () => {
@@ -208,7 +215,9 @@ const startStage = () => {
     stageTimer.value = STAGE_DURATION;
 
     console.log('startStage', currentStage.value);
-    socket.emit('startStage', currentStage.value);
+
+    // Don't emit startStage from here to prevent race conditions
+    // Let the server decide when to start stages
 
     // Start key generation
     keyGenerationInterval = setInterval(generateKeys, keyFrequency.value);
@@ -216,19 +225,15 @@ const startStage = () => {
     // Start game update loop
     gameUpdateInterval = setInterval(updateGame, 16); // ~60fps
 
-    // Use server-synchronized timer instead of local timer
-    // The server will broadcast timer updates
+    // Use server-synchronized timer
     stageTimerInterval = setInterval(() => {
         // Only decrement locally if we're not receiving server updates
-        // This serves as a backup in case of connection issues
         if (stageActive.value) {
             stageTimer.value--;
             if (stageTimer.value <= 0) {
-                // Instead of directly ending the stage, notify the server
                 socket.emit('timerEnded', currentStage.value);
-                // Still end locally to prevent weird state
-                stageActive.value = false;
-                clearIntervals();
+                // Don't end locally, wait for server confirmation
+                clearInterval(stageTimerInterval); // Just stop the timer
             }
         }
     }, 1000);
@@ -258,10 +263,14 @@ const endStage = () => {
         // Handle tie - both players get a point
         stageWinner.value = 3;
     }
+
+    // Emit endStage to server, but don't progress locally
     socket.emit('endStage', {
         stageWinner: stageWinner.value,
         wins: wins.value,
-        scores: scores.value
+        scores: scores.value,
+        total_scores: total_scores.value,
+        currentStage: currentStage.value
     });
 };
 
@@ -277,13 +286,14 @@ const generateKeys = () => {
     const keyType = keyTypes[Math.floor(Math.random() * keyTypes.length)];
     const key = { id: Date.now(), type: keyType, position: 0, status: 'active' };
 
-    // console.log('Generating key:', key)
-
-    keys.value.player1.push({ ...key });
-    keys.value.player2.push({ ...key });
-
-    socket.emit('keyGenerated', key);
+    // Only add the key locally if you're player1 (to prevent duplicates)
+    if (playerID.value === 'player1') {
+        keys.value.player1.push({ ...key });
+        keys.value.player2.push({ ...key });
+        socket.emit('keyGenerated', key);
+    }
 };
+
 const updateGame = () => {
     if (!stageActive.value) return;
 
@@ -354,11 +364,10 @@ const checkKeyHit = (playerKeys, keyType, playerNumber) => {
             }
         }, 300);
 
-        scores.value[playerNumber] += scoreForHit;
-        socket.emit('updateScore', { player: playerNumber, score: scores.value[playerNumber] });
+        //scores.value[playerNumber] += scoreForHit;
+        socket.emit('updateScore', { player: playerNumber, score: scoreForHit });
     }
 };
-
 
 // Utility functions
 const getKeyIcon = (type) => {
@@ -380,17 +389,14 @@ const clearIntervals = () => {
 // Socket event listeners
 onMounted(() => {
     window.addEventListener('keydown', handleKeyPress);
-    // if (!socket.connected) {
-    //     socket.connect()
-    // }
+
     socket.on('connect', () => {
         console.log('Socket connected');
         socket.emit('requestPlayerID');
-    })
+    });
 
     socket.on('assignPlayer', (id) => {
         playerID.value = id;
-        //console.log(playerID.value)
         waitingForPlayers.value = true;
     });
 
@@ -416,66 +422,97 @@ onMounted(() => {
 
     socket.on('startGame', () => {
         gameStarted.value = true;
-        startStage();
+        // Don't call startStage here - wait for startStage event
+        console.log('Game started');
+    });
+    
+    socket.on('receiveUsernames', (names) => {
+        console.log('Usernames received:', names);
+        usernames.value.player1 = names.player1
+        usernames.value.player2 = names.player2
     });
 
     socket.on('startStage', (stageNumber) => {
-        if (stageNumber !== currentStage.value) {
-            currentStage.value = stageNumber;
-        }
-        if (!stageActive.value) { // Only call startStage if stage is not already active
+        // Update stage number first
+        currentStage.value = stageNumber;
+        console.log(`Starting stage ${stageNumber}`);
+
+        // Then start the stage
+        if (!stageActive.value) {
             startStage();
         }
     });
 
     socket.on('endStage', (results) => {
-    // Always accept the server state as the source of truth
-    stageWinner.value = results.stageWinner;
-    wins.value = results.wins;
-    scores.value = results.scores;
-    
-    // Stop any ongoing activity for this stage
-    stageActive.value = false;
-    clearIntervals();
-    
-    // Don't attempt to progress to the next stage locally
-    // The server will trigger the next stage via startStage event
-    
-    console.log(`Stage ended. Winner: Player ${results.stageWinner}. Wins: P1=${results.wins.player1}, P2=${results.wins.player2}`);
-});
+        // Always accept the server state as the source of truth
+        stageWinner.value = results.stageWinner;
+        wins.value = results.wins;
+        scores.value = results.scores;
+        total_scores.value = results.total_scores;
+
+
+        // Stop any ongoing activity for this stage
+        stageActive.value = false;
+        clearIntervals();
+
+        console.log(`Stage ended. Winner: Player ${results.stageWinner}. Wins: P1=${results.wins.player1}, P2=${results.wins.player2}`);
+
+    });
+
+    socket.on('nextStage', (nextStageNumber) => {
+        console.log(`Advancing to stage ${nextStageNumber}`);
+        currentStage.value = nextStageNumber;
+        // Don't start the stage here - wait for startStage event
+    });
 
     socket.on('keyGenerated', (key) => {
-        // console.log('Key received:', key);
+        // Add key to both players if it doesn't already exist
         if (!keys.value.player1.some(k => k.id === key.id)) {
             keys.value.player1.push({ ...key });
             keys.value.player2.push({ ...key });
         }
     });
 
-    socket.on('keyPress', ({ playerID, key }) => {
-        if (keys.value[playerID]) {  // Safety check
-            checkKeyHit(keys.value[playerID], key, playerID);
+    socket.on('keyPress', ({ playerID: playerId, key }) => {
+        if (keys.value[playerId]) {  // Safety check
+            checkKeyHit(keys.value[playerId], key, playerId);
         } else {
-            console.warn(`Keys for ${playerID} not initialized!`);
+            console.warn(`Keys for ${playerId} not initialized!`);
         }
     });
 
     socket.on('updateScore', ({ player, score }) => {
-        scores.value[player] = score;
+        console.log(`Updating score for ${player}: ${score}`);
+        scores.value[player] += score;
+        //total_scores.value[player] = total_scores;
+        console.log(`Scores: ${JSON.stringify(scores.value)}`);
+        //console.log(`Total Scores: ${JSON.stringify(total_scores.value)}`);
+    });
+
+    socket.on('timerEnded', () => {
+        // When the server confirms timer has ended, end the stage
+        if (stageActive.value) {
+            endStage();
+        }
     });
 
     socket.on('resetGame', () => {
         console.log("Game reset received from server");
 
-        // Reset game state locally, but DON'T emit the event again
+        // Reset game state locally
         currentStage.value = 1;
         wins.value = { player1: 0, player2: 0 };
+        scores.value = { player1: 0, player2: 0 };
+        total_scores.value = { player1: 0, player2: 0 }
         stageWinner.value = 0;
         keys.value = { player1: [], player2: [] };
         gameOverMessage.value = '';
         player1Ready.value = false;
         player2Ready.value = false;
         gameStarted.value = false;
+        stageActive.value = false;
+        clearIntervals();
+        //socket.emit('startGame')
     });
 
     socket.on('gameOver', (message) => {
@@ -484,15 +521,15 @@ onMounted(() => {
         clearIntervals();
         gameOverMessage.value = message;
     });
+
     socket.on('updateTimer', (newTime) => {
-        stageTimer.value = newTime
+        stageTimer.value = newTime;
     });
 });
 
 onUnmounted(() => {
     window.removeEventListener('keydown', handleKeyPress);
     clearIntervals();
-    socket.disconnect();
     socket.off('assignPlayer');
     socket.off('player1Joined');
     socket.off('player2Joined');
@@ -501,13 +538,16 @@ onUnmounted(() => {
     socket.off('startGame');
     socket.off('startStage');
     socket.off('endStage');
+    socket.off('nextStage');
     socket.off('keyGenerated');
     socket.off('keyPress');
     socket.off('updateScore');
     socket.off('resetGame');
     socket.off('gameOver');
     socket.off('updateTimer');
-    socket.off('nextStage')
+    socket.off('timerEnded');
+    socket.removeAllListeners();
+    socket.disconnect();
     console.log('Component unmounted and cleaned up');
 });
 </script>

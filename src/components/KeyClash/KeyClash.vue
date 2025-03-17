@@ -134,6 +134,7 @@
   const maxStages = ref(MAX_STAGES);
   const currentStage = ref(1);
   const player1Score = ref(0);
+  
   const player2Score = ref(0);
   const player1Keys = ref([]);
   const player2Keys = ref([]);
