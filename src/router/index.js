@@ -17,6 +17,9 @@ import ConvertCurr from '@/components/ConvertCurr.vue'
 import KeyClash from '@/components/KeyClash/KeyClash.vue'
 import KeyClashSingle from '@/components/KeyClash/KeyClashSingle.vue'
 import KeyClashOnline from '@/components/KeyClash/KeyClashOnline.vue'
+import KeyClashInvite from '@/components/KeyClash/KeyClashRoom.vue'
+import inviteClash from '@/components/KeyClash/InviteClash.vue'
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -109,6 +112,16 @@ const router = createRouter({
       path: '/KeyClashOnline',
       name: 'KeyClashOnline',
       component: KeyClashOnline
+    },
+    {
+      path: '/KeyClashInvite',
+      name: 'KeyClashInvite',
+      component: KeyClashInvite,
+    },
+    {
+      path: '/inviteclash',
+      name: 'inviteclash',
+      component: inviteClash
     }
   ],
 })

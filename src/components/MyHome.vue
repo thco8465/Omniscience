@@ -23,7 +23,8 @@ const games = [
   {name: 'Twenty One', route: '/TwentyOne'},
   {name: 'Key Clash', route: '/KeyClash'},
   {name: 'Key Clash Single', route: '/KeyClashSingle'},
-  {name: 'Key Clash Online(Quickplay)', route: '/KeyClashOnline'}
+  {name: 'Key Clash Online(Quickplay)', route: '/KeyClashOnline'},
+  {name: 'Key Clash Online(Invite)', route: '/KeyClashInvite'},
 ];
 </script>
 

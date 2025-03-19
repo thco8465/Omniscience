@@ -6,7 +6,7 @@ import { createServer } from 'http'; // Import createServer
 import db from './Database/db.mjs';
 
 import leaderboardRoutes from './endpoints/leaderboards.mjs';
-import { router as keyClashRoutes, initializeKeyClash} from './endpoints/keyClash.mjs'; // Import WebSocket server
+import { initializeKeyClash} from './endpoints/keyClash.mjs'; // Import WebSocket server
 
 const app = express();
 const PORT = process.env.PORT || 10000;
@@ -24,7 +24,6 @@ app.options('*', cors(corsOptions));
 
 app.use(bodyParser.json());
 app.use('/leaderboard', leaderboardRoutes);
-app.use('/keyClash', keyClashRoutes);
 
 // Attach WebSocket server to the same HTTP server
 initializeKeyClash(httpServer)

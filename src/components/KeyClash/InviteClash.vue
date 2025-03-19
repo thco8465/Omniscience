@@ -1,7 +1,7 @@
 <template>
     <div class="container">
         <div class="game-header">
-            <h1>Key Clash (Online Quickplay)</h1>
+            <h1>Key Clash (Custom Online)</h1>
 
             <!-- Show waiting screen if the second player hasn't joined -->
             <div v-if="waitingForPlayers" class="waiting">
