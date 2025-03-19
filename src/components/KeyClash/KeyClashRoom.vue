@@ -82,7 +82,7 @@ const clearSent = (invite) => {
 const acceptInvite = (invite) => {
     socket.emit("acceptInvite", { inviteId: invite.id })
     updateInviteStatus(invite.id, 'Accepted');
-    router.push('/inviteclash')
+    //router.push('/inviteclash')
 }
 // Decline an incoming invite
 const declineInvite = (invite) => {

@@ -53,6 +53,32 @@ const router = express.Router();
 //         res.status(500).json({ error: 'Internal Server Error' });
 //     }
 // });
+router.get('/getUserIdByUsername', async (req, res) => {
+    console.log('Route /getUserIdByUsername was called');
+
+    const { username } = req.query;
+    console.log('Received username:', username);
+
+    try {
+        const result = await db.query('SELECT id FROM users WHERE username = $1', [username]);
+        console.log("Query result:", result);
+
+        // Check if result is an array or has rows
+        const userData = Array.isArray(result) ? result : result.rows;
+
+        if (userData.length > 0) {
+            res.json({ id: userData[0].id });
+        } else {
+            console.log('No user found for the username:', username);
+            res.status(404).json({ error: 'User not found' });
+        }
+    } catch (error) {
+        console.error('Error fetching user ID by username:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+
 router.get('/:gameName', async (req, res) => {
     const { gameName } = req.params;
     try {
@@ -167,7 +193,7 @@ router.get('/:userId/:gameName', async (req, res) => {
         res.status(500).json({ error: "Internal server error", details: err.message });
     }
 });
-
+// Assuming you're using Express.js
 //post a new leaderboard entry or update an existing one
 router.post('/:gameName', async (req, res) => {
     const { gameName } = req.params;

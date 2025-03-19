@@ -137,10 +137,14 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { io } from 'socket.io-client';
 import { useStore } from "vuex";
+import { useRoute } from 'vue-router';
+import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 const socket = io(API_URL, { transports: ['websocket'] });
 const store = useStore();
+const route = useRoute()
+const { roomId, players } = route.query;
 
 // Game constants
 const keyTypes = ['left', 'up', 'down', 'right'];
@@ -167,6 +171,7 @@ const gameOverMessage = ref('');
 const total_scores = ref({ player1: 0, player2: 0 })
 const userId = store.state.user ? store.state.user.id : -1;
 const usernames = ref({ player1: 'player1', player2: 'player' })
+const Ids = ref({ player1: -1, player2: -1 })
 
 // Game timers and intervals
 let keyGenerationInterval = null;
@@ -187,6 +192,7 @@ const keyFrequency = computed(() => {
 // Player readiness
 const setPlayerReady = () => {
     if (playerID.value) {
+        console.log(playerID.value, userId)
         socket.emit('playerReady', playerID.value, userId);
         if (playerID.value === 'player1') {
             // socket.emit('player1Ready')
@@ -385,6 +391,39 @@ const clearIntervals = () => {
     clearInterval(gameUpdateInterval);
     clearInterval(stageTimerInterval);
 };
+const submitScoreToLeaderboard = async (username, userScore) => {
+    if (userId == -1) {
+        console.log("No user logged in!");
+        return;
+    }
+
+    const gameName = 'Key Clash (Online)'; // Updated from 'Terminology Twisters' to match your game
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+    try {
+        // Step 1: Get user ID from the backend based on the username
+        const userResponse = await axios.get(`${API_URL}/leaderboard/getUserIdByUsername`, {
+            params: { username }
+        });
+
+        const userId = userResponse.data.id;
+        console.log(userId)
+        if (!userId) {
+            console.log("User ID not found for username:", username);
+            return;
+        }
+
+        // Step 2: Submit the score to the leaderboard with the userId
+        const response = await axios.post(`${API_URL}/leaderboard/${gameName}`, {
+            user_id: userId,
+            score: userScore,
+        });
+
+        console.log('Score submitted to leaderboard:', response.data);
+    } catch (error) {
+        console.error('Error submitting score to leaderboard:', error);
+    }
+};
 
 // Socket event listeners
 onMounted(() => {
@@ -392,7 +431,7 @@ onMounted(() => {
 
     socket.on('connect', () => {
         console.log('Socket connected');
-        socket.emit('requestPlayerID');
+        socket.emit('requestPlayerID', { gameType: 'custom', customRoomId: roomId });
     });
 
     socket.on('assignPlayer', (id) => {
@@ -408,7 +447,10 @@ onMounted(() => {
         console.log('Player 2 has joined');
         waitingForPlayers.value = false;
     });
-
+    // socket.on('ReceiveId', (user_id) => {
+    //     Ids.value.player1 = user_ids.player1
+    //     Ids.value.player2 = user_ids.player2
+    // })
     // Listen for updates to player readiness
     socket.on('player1Ready', () => {
         player1Ready.value = true;
@@ -425,7 +467,7 @@ onMounted(() => {
         // Don't call startStage here - wait for startStage event
         console.log('Game started');
     });
-    
+
     socket.on('receiveUsernames', (names) => {
         console.log('Usernames received:', names);
         usernames.value.player1 = names.player1
@@ -517,6 +559,10 @@ onMounted(() => {
 
     socket.on('gameOver', (message) => {
         console.log("Game over received from server:", message);
+        if (playerID.value === 'player1') {
+            submitScoreToLeaderboard(usernames.value.player1, total_scores.value.player1);
+            submitScoreToLeaderboard(usernames.value.player2, total_scores.value.player2);
+        }
         stageActive.value = false;
         clearIntervals();
         gameOverMessage.value = message;
@@ -525,6 +571,12 @@ onMounted(() => {
     socket.on('updateTimer', (newTime) => {
         stageTimer.value = newTime;
     });
+    socket.on('playerDisconnected', (id) => {
+        console.log('player disconnected: ', id)
+        stageActive.value = false;
+        clearIntervals();
+        gameOverMessage.value = `Player disconnected ${id}`;
+    })
 });
 
 onUnmounted(() => {

@@ -152,91 +152,98 @@ export default {
       for (const game of games) {
         try {
           const response = await axios.get(`${API_URL}/leaderboard/${userId}/${game}`);
-          highScores[game].value = response.data?.[0]?.score ?? 0;
+
+          if (response.status === 404 || !response.data?.[0]?.score) {
+            // If there's no score or a 404, set default score to 0
+            highScores[game].value = 0;
+          } else {
+            highScores[game].value = response.data[0]?.score ?? 0;
+          }
         } catch (error) {
           console.error(`Error fetching high score for ${game}:`, error);
+          // If there's any error (including network issues), set default score to 0
           highScores[game].value = 0;
         }
       }
-    };
+    }
 
-    // Fetch cosmetics function
-    const fetchCosmetics = async (userId) => {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-      try {
-        const types = ["background", "avatar", "card"];
-        const [fetchedBackgrounds, fetchedAvatars, fetchedCards] = await Promise.all(
-          types.map(type => axios.get(`${API_URL}/profile/${type}/${userId}`).then(res => res.data))
-        );
+      // Fetch cosmetics function
+      const fetchCosmetics = async (userId) => {
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+        try {
+          const types = ["background", "avatar", "card"];
+          const [fetchedBackgrounds, fetchedAvatars, fetchedCards] = await Promise.all(
+            types.map(type => axios.get(`${API_URL}/profile/${type}/${userId}`).then(res => res.data))
+          );
 
-        backgrounds.value = fetchedBackgrounds;
-        avatars.value = fetchedAvatars;
-        cards.value = fetchedCards;
+          backgrounds.value = fetchedBackgrounds;
+          avatars.value = fetchedAvatars;
+          cards.value = fetchedCards;
 
-        // Fetch equipped items
-        const equippedItems = await axios.get(`${API_URL}/profile/equipped/${userId}`);
-        console.log('Equipped items: ', equippedItems.data);
+          // Fetch equipped items
+          const equippedItems = await axios.get(`${API_URL}/profile/equipped/${userId}`);
+          console.log('Equipped items: ', equippedItems.data);
 
-        store.commit("setEquippedBackground", equippedItems.data.background || null);
-        store.commit("setEquippedAvatar", equippedItems.data.avatar || null);
-        store.commit("setEquippedCard", equippedItems.data.card || null);
-      } catch (error) {
-        console.error("Error fetching cosmetics:", error);
-      }
-    };
-
-    // Equip an item (background, avatar, or card)
-    const equipItem = async (item, type) => {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-      try {
-        await axios.post(`${API_URL}/profile/equip`, {
-          userId: user.value.id,
-          itemId: item.id,
-          type
-        });
-
-        if (type === "background") {
-          store.commit("setEquippedBackground", item.image_url);
+          store.commit("setEquippedBackground", equippedItems.data.background || null);
+          store.commit("setEquippedAvatar", equippedItems.data.avatar || null);
+          store.commit("setEquippedCard", equippedItems.data.card || null);
+        } catch (error) {
+          console.error("Error fetching cosmetics:", error);
         }
-        if (type === "avatar") {
-          store.commit("setEquippedAvatar", item.image_url);
+      };
+
+      // Equip an item (background, avatar, or card)
+      const equipItem = async (item, type) => {
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+        try {
+          await axios.post(`${API_URL}/profile/equip`, {
+            userId: user.value.id,
+            itemId: item.id,
+            type
+          });
+
+          if (type === "background") {
+            store.commit("setEquippedBackground", item.image_url);
+          }
+          if (type === "avatar") {
+            store.commit("setEquippedAvatar", item.image_url);
+          }
+          if (type === "card") {
+            store.commit("setEquippedCard", item.style_class);
+          }
+        } catch (error) {
+          console.error("Error equipping item:", error);
         }
-        if (type === "card") {
-          store.commit("setEquippedCard", item.style_class);
+      };
+
+      // Watch for changes in the equipped background and apply it immediately
+      watchEffect(() => {
+        if (equippedBackground.value) {
+          document.body.style.backgroundImage = `url('${equippedBackground.value}')`;
+          document.body.style.backgroundSize = 'cover';
+          document.body.style.backgroundPosition = 'center';
+          document.body.style.backgroundAttachment = 'fixed';
         }
-      } catch (error) {
-        console.error("Error equipping item:", error);
-      }
-    };
+      });
 
-    // Watch for changes in the equipped background and apply it immediately
-    watchEffect(() => {
-      if (equippedBackground.value) {
-        document.body.style.backgroundImage = `url('${equippedBackground.value}')`;
-        document.body.style.backgroundSize = 'cover';
-        document.body.style.backgroundPosition = 'center';
-        document.body.style.backgroundAttachment = 'fixed';
-      }
-    });
+      onMounted(async () => {
+        user.value = store.state.user;
+        if (user.value) {
+          console.log("User detected in onMounted:", user.value);
 
-    onMounted(async () => {
-      user.value = store.state.user;
-      if (user.value) {
-        console.log("User detected in onMounted:", user.value);
+          await store.dispatch("fetchEquippedItems");
 
-        await store.dispatch("fetchEquippedItems");
+          fetchCosmetics(user.value.id);
+          fetchHighScores(user.value.id);
+        }
+      });
 
-        fetchCosmetics(user.value.id);
-        fetchHighScores(user.value.id);
-      }
-    });
-
-    return {
-      user, backgrounds, avatars, cards, equippedBackground, equippedAvatar, equippedCard, equipItem,
-      HangmanHigh, AlphaArenaHigh, TerminologyTwistersHigh, ClickaPaloozaHigh, TilesofTerrorHigh, CopyCatHigh
-    };
-  }
-};
+      return {
+        user, backgrounds, avatars, cards, equippedBackground, equippedAvatar, equippedCard, equipItem,
+        HangmanHigh, AlphaArenaHigh, TerminologyTwistersHigh, ClickaPaloozaHigh, TilesofTerrorHigh, CopyCatHigh
+      };
+    }
+  };
 </script>
 
 

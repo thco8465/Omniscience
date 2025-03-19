@@ -392,7 +392,7 @@ onMounted(() => {
 
     socket.on('connect', () => {
         console.log('Socket connected');
-        socket.emit('requestPlayerID');
+        socket.emit('requestPlayerID', {gameType: 'quickplay'});
     });
 
     socket.on('assignPlayer', (id) => {
@@ -525,6 +525,12 @@ onMounted(() => {
     socket.on('updateTimer', (newTime) => {
         stageTimer.value = newTime;
     });
+    socket.on('playerDisconnected', (id) => {
+        console.log('player disconnected: ', id)
+        stageActive.value = false;
+        clearIntervals();
+        gameOverMessage.value = `Player disconnected ${id}`;
+    })
 });
 
 onUnmounted(() => {

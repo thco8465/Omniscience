@@ -4,7 +4,8 @@ import db from '../Database/db.mjs'
 
 const games = {}; // Store active games in memory
 let io; // Define io outside so it can be initialized later
-let waitingPlayer = null; // Track a player waiting for an opponent
+let waitingQuickplay = null; // Queue for Quickplay players
+let waitingCustomGames = {}; // Object to track waiting players by room ID
 const connectedUsers = {}
 
 // Game constants
@@ -100,7 +101,7 @@ function initializeKeyClash(httpServer) {
                 if (recipientSocket) {
                     recipientSocket.emit('inviteReceived', result[0]);
                 }
-                if(senderSocket){
+                if (senderSocket) {
                     senderSocket.emit('inviteSent', result[0])
                 }
             } else {
@@ -115,7 +116,7 @@ function initializeKeyClash(httpServer) {
                     socket.emit('error', 'Invite not found or already accepted/declined');
                     return;
                 }
-                console.log('acceptInvite')
+                console.log('acceptInvite');
 
                 const invite = result[0];
                 const senderSocket = getSocketByUsername(invite.from_username);
@@ -127,35 +128,34 @@ function initializeKeyClash(httpServer) {
                     // Join both players to the game room
                     senderSocket.join(roomId);
                     recipientSocket.join(roomId);
-                    console.log('inside sender and recipient')
+                    console.log('inside sender and recipient');
 
-                    // Notify both players
+                    // Notify both players that the game has started
                     io.to(roomId).emit('gameStarted', {
                         roomId,
                         players: [invite.from_username, invite.to_username]
                     });
-                    console.log('emit to sender')
-                    // Notify the sender that the recipient accepted
-                    senderSocket.emit('inviteAccepted', {
+                    console.log('emit to both players');
+
+                    // Notify both the sender and recipient that the invite was accepted
+                    io.to(roomId).emit('inviteAccepted', {
                         roomId,
                         players: [invite.from_username, invite.to_username]
                     });
 
                     // Initialize the game state
                     games[roomId] = {
-                        //playerSockets: { player1: senderSocket.id, player2: recipientSocket.id },
-                        //usernames: { player1: invite.from_username, player2: invite.to_username },
                         scores: { player1: 0, player2: 0 },
-                        players: [waitingPlayer, socket.id],
+                        players: [invite.from_username, invite.to_username], // Correct the player identifiers
                         total_scores: { player1: 0, player2: 0 },
                         ready: { player1: false, player2: false },
                         stageStarted: false,
                         currentStage: 1,
                         wins: { player1: 0, player2: 0 },
-                        usernames: { player1: '', player: '' },
+                        usernames: { player1: invite.from_username, player2: invite.to_username },
+                        user_ids: {player1: 0, player2: 0},
                         stageTimer: null
                     };
-
 
                     console.log(`Game started between ${invite.from_username} and ${invite.to_username}`);
                 } else {
@@ -167,6 +167,20 @@ function initializeKeyClash(httpServer) {
             }
         });
 
+        socket.on('getIds', async({username}) => {
+            try{
+                const result = await db.query('SELECT id FROM users WHERE username = $1', [username]);
+                if (result.length === 0) {
+                    socket.emit('error', 'Invite not found or already accepted/declined');
+                    return;
+                }
+                console.log('acceptInvite');
+            }catch(error){
+                console.log('id not found by username')
+            }
+            socket.emit('ReceiveId', result)
+        }
+    )
         // Handle declining an invite
         socket.on('declineInvite', async ({ inviteId }) => {
             // Update the invite status in the database
@@ -184,43 +198,79 @@ function initializeKeyClash(httpServer) {
             }
 
         });
-        socket.on('requestPlayerID', () => {
-            if (!waitingPlayer) {
-                waitingPlayer = socket.id;
-                socket.emit('assignPlayer', 'player1');
-                io.emit('player1Joined');
-            } else {
-                const roomId = `game-${waitingPlayer}`;
-                socket.join(roomId);
-                const player1Socket = io.sockets.sockets.get(waitingPlayer);
-                if (player1Socket) {
-                    player1Socket.join(roomId);
+        socket.on('requestPlayerID', ({ gameType, customRoomId }) => {
+            if (gameType == 'quickplay') {
+                if (!waitingQuickplay) {
+                    waitingQuickplay = socket.id;
+                    socket.emit('assignPlayer', 'player1');
+                    io.emit('player1Joined');
+                } else {
+                    const roomId = `game-${waitingQuickplay}`;
+                    socket.join(roomId);
+                    const player1Socket = io.sockets.sockets.get(waitingQuickplay);
+                    if (player1Socket) {
+                        player1Socket.join(roomId);
+                    }
+
+                    // Inform both players of their roles and that both players have joined
+                    io.to(waitingQuickplay).emit('assignPlayer', 'player1');
+                    socket.emit('assignPlayer', 'player2');
+
+                    io.to(roomId).emit('player1Joined');
+                    io.to(roomId).emit('player2Joined');
+
+                    // Initialize game state
+                    games[roomId] = {
+                        //playerSockets: { player1: senderSocket.id, player2: recipientSocket.id },
+                        //usernames: { player1: invite.from_username, player2: invite.to_username },
+                        scores: { player1: 0, player2: 0 },
+                        players: [waitingQuickplay, socket.id],
+                        total_scores: { player1: 0, player2: 0 },
+                        ready: { player1: false, player2: false },
+                        stageStarted: false,
+                        currentStage: 1,
+                        wins: { player1: 0, player2: 0 },
+                        usernames: { player1: '', player2: '' },
+                        stageTimer: null
+                    };
+                    waitingQuickplay = null;
+                }
+            } else if (gameType === 'custom') {
+                if (!customRoomId) {
+                    socket.emit('error', 'Custom game must have a roomId');
+                    return;
                 }
 
-                // Inform both players of their roles and that both players have joined
-                io.to(waitingPlayer).emit('assignPlayer', 'player1');
-                socket.emit('assignPlayer', 'player2');
+                if (!waitingCustomGames[customRoomId]) {
+                    waitingCustomGames[customRoomId] = socket.id;
+                    socket.emit('assignPlayer', 'player1');
+                } else {
+                    const roomId = `game-${customRoomId}`;
+                    socket.join(roomId);
+                    const player1Socket = io.sockets.sockets.get(waitingCustomGames[customRoomId]);
 
-                io.to(roomId).emit('player1Joined');
-                io.to(roomId).emit('player2Joined');
+                    if (player1Socket) {
+                        console.log('socket1 exists')
+                        player1Socket.join(roomId);
+                    }
+                    io.to(waitingCustomGames[customRoomId]).emit('assignPlayer', 'player1'); socket.emit('assignPlayer', 'player2');
+                    io.to(roomId).emit('player1Joined');
+                    io.to(roomId).emit('player2Joined');
 
-                // Initialize game state
-                games[roomId] = {
-                    //playerSockets: { player1: senderSocket.id, player2: recipientSocket.id },
-                    //usernames: { player1: invite.from_username, player2: invite.to_username },
-                    scores: { player1: 0, player2: 0 },
-                    players: [waitingPlayer, socket.id],
-                    total_scores: { player1: 0, player2: 0 },
-                    ready: { player1: false, player2: false },
-                    stageStarted: false,
-                    currentStage: 1,
-                    wins: { player1: 0, player2: 0 },
-                    usernames: { player1: '', player2: '' },
-                    stageTimer: null
-                };
+                    games[roomId] = {
+                        scores: { player1: 0, player2: 0 },
+                        players: [waitingCustomGames[customRoomId], socket.id],
+                        total_scores: { player1: 0, player2: 0 },
+                        ready: { player1: false, player2: false },
+                        stageStarted: false,
+                        currentStage: 1,
+                        wins: { player1: 0, player2: 0 },
+                        usernames: { player1: '', player2: '' },
+                        stageTimer: null
+                    };
 
-
-                waitingPlayer = null;
+                    delete waitingCustomGames[customRoomId];
+                }
             }
         });
         // Player readiness handling
@@ -231,7 +281,7 @@ function initializeKeyClash(httpServer) {
                 const playerKey = playerID === 'player1' ? 'player1' : 'player2';
                 games[roomId].ready[playerKey] = true;
                 const user = await fetchUsername(id)
-                console.log(user)
+                console.log('playerkey, playerid: ', playerKey, playerID)
                 if (user) {
                     games[roomId].usernames[playerKey] = user
                 }
@@ -374,8 +424,13 @@ function initializeKeyClash(httpServer) {
             console.log(`Player disconnected: ${socket.id}`);
 
             // If the player was waiting for an opponent, remove them
-            if (waitingPlayer === socket.id) {
-                waitingPlayer = null;
+            const roomId = getPlayerRoom(socket.id);
+            if (waitingQuickplay === socket.id) {
+                waitingQuickplay = null;
+                return;
+            }
+            if (waitingCustomGames[roomId] === socket.id) {
+                waitingCustomGames = null;
                 return;
             }
 
@@ -394,11 +449,16 @@ function initializeKeyClash(httpServer) {
                         games[roomId].stageTimer = null;
                     }
 
+                    // Notify remaining players
+                    const key = getPlayerRole(socket.id, roomId);  // Gets 'player1' or 'player2'
+                    //console.log(games[roomId].usernames, games[roomId].usernames[key], games[roomId].usernames[key][0].username)
+                    const name = games[roomId].usernames[key]?.[0]?.username || `${key} (unknown)`;  // Access the correct player's username
+                    io.to(roomId).emit('playerDisconnected', name);
+
                     // Remove the player from the game
                     games[roomId].players = games[roomId].players.filter(id => id !== socket.id);
 
-                    // Notify remaining players
-                    io.to(roomId).emit('playerDisconnected', socket.id);
+
 
                     // If no players left, delete the game
                     if (games[roomId].players.length === 0) {
@@ -544,6 +604,7 @@ function initializeKeyClash(httpServer) {
         if (!games[roomId]) return;
         const total_scores = games[roomId].total_scores
         //console.log(total_scores)
+        
 
         console.log(`Game over in ${roomId}, Player ${winner} wins!`);
         if (winner == 3) {

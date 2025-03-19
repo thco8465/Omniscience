@@ -10,12 +10,8 @@
                 <p><strong>Silver:</strong> {{ silver }} 🥈</p>
                 <p><strong>Bronze:</strong> {{ bronze }} 🥉</p>
             </div>
-<<<<<<< HEAD
-=======
             <button @click="redirectToConverter">Convert Currency</button>
->>>>>>> 97a0620 (recovered i think)
         </div>
-
         <div class="items-container">
             <div class="background-column">
                 <h3>Backgrounds</h3>

@@ -39,7 +39,9 @@ export default {
                 { name: "clickPalooza", displayName: "Click-a-Palooza", list: [] },
                 { name: "tilesOfTerror", displayName: "Tiles of Terror", list: [] },
                 { name: "copyCat", displayName: "Copy Cat", list: [] },
-                {name: "Key Clash", displayName: "Key Clash", list: []}
+                {name: "Key Clash", displayName: "Key Clash", list: []},
+                {name: "Key Clash (Online)", displayName: "Key Clash (Online)", list: []}
+
             ],
             currentUserId: this.$store.state.user ? this.$store.state.user.id : -1,
         };
