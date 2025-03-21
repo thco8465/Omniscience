@@ -4,7 +4,7 @@
   </main>
 </template>
 <script>
-import WordleGame from '../components/WordleGame.vue';
+import WordleGame from '../components/Wordle/WordleGame.vue';
 
 export default{
     components: {

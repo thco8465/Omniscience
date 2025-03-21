@@ -157,7 +157,7 @@ export default {
             return this.dealerTotal;
         },
         isBetValid() {
-            return this.currentBet.bronze > 0 || this.currentBet.silver > 0 || this.currentBet.gold > 0;
+            return this.currentBet.bronze >= 0 || this.currentBet.silver >= 0 || this.currentBet.gold >= 0;
         },
         resultClass() {
             return this.betWon ? 'win-message' : 'lose-message';
@@ -398,11 +398,7 @@ export default {
 };
 </script>
 
-<<<<<<< HEAD
-<style>
-=======
 <style scoped>
->>>>>>> 97a0620 (recovered i think)
 .game-container {
     text-align: center;
     max-width: 800px;

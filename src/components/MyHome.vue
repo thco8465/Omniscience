@@ -20,11 +20,11 @@ const games = [
   { name: 'Click-a-Palooza', route: '/ShapeClicker' },
   { name: 'Tiles of Terror', route: '/Tiles' },
   { name: 'Copy Cat', route: '/Repeater' },
-  {name: 'Twenty One', route: '/TwentyOne'},
-  {name: 'Key Clash', route: '/KeyClash'},
-  {name: 'Key Clash Single', route: '/KeyClashSingle'},
-  {name: 'Key Clash Online(Quickplay)', route: '/KeyClashOnline'},
-  {name: 'Key Clash Online(Invite)', route: '/KeyClashInvite'},
+  { name: 'Twenty One', route: '/TwentyOne' },
+  { name: 'Key Clash', route: '/KeyClash' },
+  { name: 'Key Clash(Single)', route: '/KeyClashSingle' },
+  { name: 'Key Clash Online(Quickplay)', route: '/KeyClashOnline' },
+  { name: 'Key Clash Online(Custom)', route: '/KeyClashInvite' },
 ];
 </script>
 
@@ -35,10 +35,14 @@ const games = [
 
     <!-- Game Grid -->
     <div class="game-grid">
-      <div v-for="(game, index) in games" :key="index" class="game-card">
-        <h2>{{ game.name }}</h2>
-        <button @click="navigateToGame(game.route)">Play</button>
-      </div>
+      <template v-for="(game, index) in games" :key="index">
+        <div v-if="!(game.name === 'Key Clash Online(Custom)' && !userId)" class="game-card">
+          <h2>{{ game.name }}</h2>
+          <button @click="navigateToGame(game.route)">
+            Play
+          </button>
+        </div>
+      </template>
     </div>
   </main>
 </template>

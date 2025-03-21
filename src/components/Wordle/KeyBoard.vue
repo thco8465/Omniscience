@@ -1,12 +1,8 @@
 <template>
     <div class="keyboard">
         <div class="row" v-for="(row, index) in keys" :key="index">
-            <button 
-                v-for="key in row" 
-                :key="key" 
-                :class="keyStates[key.toLowerCase()] || ''"
-                @click="pressKey(key)"
-            >
+            <button v-for="key in row" :key="key" :class="keyStates[key.toLowerCase()] || ''" @click="pressKey(key)"
+                >
                 {{ key }}
             </button>
         </div>
@@ -19,7 +15,16 @@
 
 <script>
 export default {
-    props: ["keyStates"],
+    props: {
+        disabled: {
+            type: Boolean,
+            default: false,
+        },
+        keyStates: {
+            type: Object,
+            default: () => ({}),
+        },
+    },
     data() {
         return {
             keys: [
@@ -37,7 +42,9 @@ export default {
     },
     methods: {
         pressKey(key) {
-            this.$emit("letter", key);
+            if (!this.disabled) {
+                this.$emit('letter', key);
+            }
         },
         handleKeyPress(event) {
             const key = event.key.toUpperCase();
@@ -62,10 +69,12 @@ export default {
     flex-direction: column;
     align-items: center;
     gap: 10px;
-    background: linear-gradient(135deg, #4e54c8, #8f94fb); /* Modern gradient */
+    background: linear-gradient(135deg, #4e54c8, #8f94fb);
+    /* Modern gradient */
     padding: 20px;
     border-radius: 5px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    /* Subtle shadow */
     max-width: 600px;
     margin: 0 auto;
     width: 100%;
@@ -94,30 +103,35 @@ button {
     transition: background-color 0.3s ease-in-out, transform 0.2s ease-in-out;
     flex: 1;
     min-width: 40px;
-    max-width: 70px; /* Ensures button doesn't get too large */
+    max-width: 70px;
+    /* Ensures button doesn't get too large */
     box-sizing: border-box;
 }
+
 button.correct {
-  background-color: green;
-  color: white;
+    background-color: green;
+    color: white;
 }
 
 button.present {
-  background-color: yellow;
-  color: black;
+    background-color: yellow;
+    color: black;
 }
 
 button.absent {
-  background-color: red;
-  color: white;
+    background-color: red;
+    color: white;
 }
+
 button:hover {
-    background-color: #8f94fb; /* Lighten on hover */
+    background-color: #8f94fb;
+    /* Lighten on hover */
     transform: scale(1.05);
 }
 
 button:active {
-    background-color: #4e54c8; /* Darker shade on active */
+    background-color: #4e54c8;
+    /* Darker shade on active */
 }
 
 button:focus {
@@ -136,10 +150,10 @@ button:disabled {
     width: 100%;
     margin-top: 20px;
 }
-.key-row{
+
+.key-row {
     display: flex;
     gap: 5px;
     justify-content: center;
 }
-
 </style>

@@ -1,7 +1,7 @@
 <script>
-import HangMan from '../components/HangMan.vue';
-import KeyBoard from '../components/KeyBoard.vue';
-import InputBar from '../components/InputBar.vue';
+import HangMan from '../components/Hangman/HangMan.vue';
+import KeyBoard from '../components/Wordle/KeyBoard.vue';
+import InputBar from '../components/Hangman/InputBar.vue';
 import axios from 'axios';
 
 export default {

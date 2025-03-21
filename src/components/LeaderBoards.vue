@@ -33,14 +33,14 @@ export default {
     data() {
         return {
             games: [
-                { name: "hangman", displayName: "Hangman", list: [] },
-                { name: "alphaArena", displayName: "Alpha Arena", list: [] },
-                { name: "terminologyTwisters", displayName: "Terminology Twisters", list: [] },
-                { name: "clickPalooza", displayName: "Click-a-Palooza", list: [] },
-                { name: "tilesOfTerror", displayName: "Tiles of Terror", list: [] },
-                { name: "copyCat", displayName: "Copy Cat", list: [] },
-                {name: "Key Clash", displayName: "Key Clash", list: []},
-                {name: "Key Clash (Online)", displayName: "Key Clash (Online)", list: []}
+                { name: "Hangman", displayName: "Hangman", list: [] },
+                { name: "Alpha Arena", displayName: "Alpha Arena", list: [] },
+                { name: "Terminology Twisters", displayName: "Terminology Twisters", list: [] },
+                { name: "Click-a-Palooza", displayName: "Click-a-Palooza", list: [] },
+                { name: "Tiles of Terror", displayName: "Tiles of Terror", list: [] },
+                { name: "Copy Cat", displayName: "Copy Cat", list: [] },
+                {name: "Key Clash", displayName: "Key Clash(Single)", list: []},
+                {name: "Key Clash (Online)", displayName: "Key Clash (Custom)", list: []}
 
             ],
             currentUserId: this.$store.state.user ? this.$store.state.user.id : -1,
@@ -61,7 +61,7 @@ export default {
             for (const game of this.games) {
                 try {
                     console.log('trying for ', game)
-                    const response = await axios.get(`${API_URL}/leaderboard/${game.displayName}`);
+                    const response = await axios.get(`${API_URL}/leaderboard/${game.name}`);
                     this.setLeaderboardData(game.displayName, response.data);
                 } catch (error) {
                     console.error(`Error fetching leaderboard for ${game.displayName}:`, error);

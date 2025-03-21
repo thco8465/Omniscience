@@ -60,7 +60,7 @@ const sendInvite = () => {
     }
 
     if (!username) {
-        alert("Your username is not set.");
+        alert("You must be signed in.");
         return;
     }
 
@@ -121,6 +121,10 @@ onMounted(() => {
     socket.on('inviteStatusUpdated', (invite) => {
         if (invite.status === 'Declined') {
             // Remove the declined invite from the list
+            const index = invites_sent.value.findIndex(i => i.id === invite.id);
+            if (index !== -1) {
+                invites_sent.value[index].status = invite.status;
+            }
             removeDeclinedInvite(invite.id);
         } else {
             const index = invites_sent.value.findIndex(i => i.id === invite.id);
