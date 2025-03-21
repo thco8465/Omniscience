@@ -1,20 +1,23 @@
 <template>
     <div id="app" class="wordle-container">
         <h1 class="game-title">Alpha Arena</h1>
-        <div class="player1">
-            <WordGrid :guesses="guesses_1" :maxGuesses="6" :feedback="feedback_1" :currentGuess="currentGuess_1" />
-            <KeyBoard @letter="addLetter(1)" @delete="deleteLetter(1)" @submit="submitGuess(1)"
-                :keyStates="keyStates_1" 
-                :disabled="gameOver"/>
-        </div>
-        <div class="player2">
-            <WordGrid :guesses="guesses_2" :maxGuesses="6" :feedback="feedback_2" :currentGuess="currentGuess_2" />
-            <KeyBoard @letter="addLetter(2)" @delete="deleteLetter(2)" @submit="submitGuess(2)"
-                :keyStates="keyStates_2" 
-                :disabled="gameOver"/>
+        <div class="game-board">
+            <div class="player1">
+                <WordGrid :guesses="guesses_1" :maxGuesses="6" :feedback="feedback_1" :currentGuess="currentGuess_1" />
+                <KeyBoard @letter="addLetter(1, $event)" @delete="deleteLetter(1)" @submit="submitGuess(1)"
+                    :keyStates="keyStates_1" :disabled="gameOver || currentPlayer !== 1" :player_num="1" />
+            </div>
+
+            <div class="player2">
+                <WordGrid :guesses="guesses_2" :maxGuesses="6" :feedback="feedback_2" :currentGuess="currentGuess_2" />
+                <KeyBoard @letter="addLetter(2, $event)" @delete="deleteLetter(2)" @submit="submitGuess(2)"
+                    :keyStates="keyStates_2" :disabled="gameOver || currentPlayer !== 2" :player_num="2" />
+            </div>
+
         </div>
     </div>
 </template>
+
 
 <script>
 import axios from 'axios'; // Make sure axios is imported
@@ -43,6 +46,7 @@ export default {
             feedback_2: [],
             keyStates_2: {},
             score_2: 0,
+            currentPlayer: 1,
         };
     },
     created() {
@@ -85,12 +89,16 @@ export default {
             //console.log(this.targetWord)
         },
         addLetter(player_num, letter) {
-            if (this[`currentGuess_${player_num}`].length < this.targetWord.length) {
-                this[`currentGuess_${player_num}`] += letter.toUpperCase();
+            if (player_num === this.currentPlayer) {  // Ensure only the active player can add a letter
+                if (this[`currentGuess_${player_num}`].length < this.targetWord.length) {
+                    this[`currentGuess_${player_num}`] += letter.toUpperCase();
+                }
             }
         },
         deleteLetter(player_num) {
-            this[`currentGuess_${player_num}`] = this[`currentGuess_${player_num}`].slice(0, -1);
+            if (player_num === this.currentPlayer) {  // Ensure only the active player can add a letter
+                this[`currentGuess_${player_num}`] = this[`currentGuess_${player_num}`].slice(0, -1);
+            }
         },
         async validateWord(word) {
             try {
@@ -107,7 +115,13 @@ export default {
             }
         },
         async submitGuess(player_num) {
-            if(this.gameOver) return
+            if (this.gameOver) return;
+
+            // Make sure it's the player's turn
+            if (player_num !== this.currentPlayer) {
+                return;
+            }
+
             console.log("Current guess:", this[`currentGuess_${player_num}`]);
 
             if (this[`currentGuess_${player_num}`].length === this.targetWord.length) {
@@ -118,6 +132,7 @@ export default {
                     alert("Invalid word! Please guess a valid word.");
                     return;
                 }
+
                 // Normalize to lowercase for comparisons
                 const normalizedGuess = this[`currentGuess_${player_num}`].toLowerCase();
                 const normalizedTarget = this.targetWord.toLowerCase();
@@ -138,7 +153,7 @@ export default {
                         feedback[idx] = "correct";
                         correct++;
                         targetCounts[char]--; // Decrement count for this letter
-                        this[`keyStates_${player_num}`][char] = "correct"
+                        this[`keyStates_${player_num}`][char] = "correct";
                     }
                 });
 
@@ -149,41 +164,54 @@ export default {
                         feedback[idx] = "present";
                         targetCounts[char]--; // Decrement count for this letter
                         if (this[`keyStates_${player_num}`][char] !== "correct") {
-                            this[`keyStates_${player_num}`][char] = "present"
+                            this[`keyStates_${player_num}`][char] = "present";
                         }
                     } else {
                         feedback[idx] = "absent";
                         if (!this[`keyStates_${player_num}`][char]) {
-                            this[`keyStates_${player_num}`][char] = "absent"
+                            this[`keyStates_${player_num}`][char] = "absent";
                         }
                     }
                 });
 
                 // Push the guess and its feedback
-                this[`guesses_${player_num}`].push([...this.currentGuess.toUpperCase()]); // Preserve original casing for display
+                this[`guesses_${player_num}`].push([...this[`currentGuess_${player_num}`].toUpperCase()]);
                 this[`feedback_${player_num}`].push(feedback);
-                console.log("Normalized guess:", normalizedGuess);
-                console.log("Normalized target:", normalizedTarget);
-                console.log("Feedback:", this[`feedback_${player_num}`]);
 
                 // Check if the guess is correct
-                this[`score_${player_num}`] = correct
-                //console.log(this.score)
+                this[`score_${player_num}`] = correct;
                 if (normalizedGuess === normalizedTarget) {
-                    alert(`${player_num} wins!`);
+                    alert(`${player_num === 1 ? "Player 1" : "Player 2"} wins!`);
+                    this.gameOver = true;
                 } else if (this[`guesses_${player_num}`].length >= this.maxGuesses) {
                     alert(`Game Over! The word was ${this.targetWord}`);
+                    this.gameOver = true;
                 }
 
                 // Reset the current guess
-                this[`currentGuess_${player_num}`] = ""
+                this[`currentGuess_${player_num}`] = "";
+
+                // Toggle the active player after a valid guess
+                this.currentPlayer = this.currentPlayer === 1 ? 2 : 1;
             }
-        },
+        }
     },
 };
 </script>
 
 <style scoped>
+.game-title {
+    font-family: Arial, sans-serif;
+    font-size: 36px;
+    font-weight: bold;
+    color: #007bff;
+    margin-bottom: 20px;
+    /* Adds space between the title and the game boards */
+    text-align: center;
+    /* Centers the title */
+}
+
+/* Main container for the game */
 .wordle-container {
     font-family: Arial, sans-serif;
     text-align: center;
@@ -191,28 +219,27 @@ export default {
     background-color: #f4f4f4;
     padding: 20px;
     border-radius: 10px;
-    max-width: 600px;
+    max-width: 1200px;
     display: flex;
     flex-direction: column;
+    /* Keeps the title above the boards */
     justify-content: flex-start;
     align-items: center;
-    min-height: 80vh;
+    /* Centers the content */
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Info Screen Styles */
-.info-screen {
-    position: fixed;
-    top: 145px;
-    left: 0;
-    width: 100%;
-    height: 80%;
-    background-color: rgba(255, 255, 255, 0.9);
+.game-board {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 10;
-    transition: opacity 0.5s ease;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 20px;
+    width: 100%;
+}
+
+.player1,
+.player2 {
+    width: 48%
 }
 
 h2 {
@@ -336,49 +363,11 @@ button:active {
     animation: slideIn 1s ease-in-out;
 }
 
-.hint-button {
-    margin: 20px;
-    padding: 10px 20px;
-    font-size: 16px;
-    background-color: #4e54c8;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.hint-button:hover {
-    background-color: #8f94fb;
-}
-
-.hint-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-}
-
 .modal-content {
     background: white;
     padding: 20px;
     border-radius: 5px;
     text-align: center;
-}
-
-.hint-box {
-    margin: 20px auto;
-    padding: 10px;
-    background-color: #f8f9fa;
-    border-left: 5px solid #4e54c8;
-    font-size: 16px;
-    max-width: 600px;
 }
 
 .game-over {

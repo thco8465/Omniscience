@@ -19,6 +19,7 @@ import KeyClashSingle from '@/components/KeyClash/KeyClashSingle.vue'
 import KeyClashOnline from '@/components/KeyClash/KeyClashOnline.vue'
 import KeyClashInvite from '@/components/KeyClash/KeyClashRoom.vue'
 import inviteClash from '@/components/KeyClash/InviteClash.vue'
+import AlphaOnline from '@/components/Wordle/WordleOnline.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -122,6 +123,11 @@ const router = createRouter({
       path: '/inviteclash',
       name: 'inviteclash',
       component: inviteClash
+    },
+    {
+      path: '/AlphaOnline',
+      name: 'AlphaOnline',
+      component: AlphaOnline
     }
   ],
 })

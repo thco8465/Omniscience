@@ -1,8 +1,12 @@
 <template>
     <div class="keyboard">
         <div class="row" v-for="(row, index) in keys" :key="index">
-            <button v-for="key in row" :key="key" :class="keyStates[key.toLowerCase()] || ''" @click="pressKey(key)"
-                >
+            <button 
+                v-for="key in row" 
+                :key="key" 
+                :class="keyStates[key.toLowerCase()] || ''" 
+                @click="pressKey(key)"
+            >
                 {{ key }}
             </button>
         </div>
@@ -24,6 +28,10 @@ export default {
             type: Object,
             default: () => ({}),
         },
+        player_num: {
+            type: Number,
+            required: true, // Ensure that the player_num is passed
+        },
     },
     data() {
         return {
@@ -43,13 +51,14 @@ export default {
     methods: {
         pressKey(key) {
             if (!this.disabled) {
-                this.$emit('letter', key);
+                // Emit the letter with the player number
+                this.$emit('letter', key, this.player_num);
             }
         },
         handleKeyPress(event) {
             const key = event.key.toUpperCase();
             if (this.isLetterKey(key)) {
-                this.$emit("letter", key);
+                this.$emit("letter", key, this.player_num);
             } else if (key === "BACKSPACE") {
                 this.$emit("delete");
             } else if (key === "ENTER") {
@@ -62,6 +71,7 @@ export default {
     },
 };
 </script>
+
 
 <style scoped>
 .keyboard {
