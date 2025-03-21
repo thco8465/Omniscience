@@ -33,7 +33,7 @@ export default createStore({
       commit('setUser', user);
     },
     async fetchEquippedItems({commit, state}){
-      console.log(import.meta.env.VITE_API_URL); // Should log the backend URL
+      //console.log(import.meta.env.VITE_API_URL); // Should log the backend URL
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
       if (!state.user) return;
       try{

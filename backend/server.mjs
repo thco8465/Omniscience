@@ -6,7 +6,7 @@ import { createServer } from 'http'; // Import createServer
 import db from './Database/db.mjs';
 
 import leaderboardRoutes from './endpoints/leaderboards.mjs';
-import { initializeKeyClash} from './endpoints/keyClash.mjs'; // Import WebSocket server
+import {initializeWebSocketServer, initializeKeyClash, initializeWordle} from './endpoints/keyClash.mjs'; // Import WebSocket server
 
 const app = express();
 const PORT = process.env.PORT || 10000;
@@ -25,8 +25,12 @@ app.options('*', cors(corsOptions));
 app.use(bodyParser.json());
 app.use('/leaderboard', leaderboardRoutes);
 
+// Initialize the WebSocket server (only once)
+initializeWebSocketServer(httpServer);
+
 // Attach WebSocket server to the same HTTP server
 initializeKeyClash(httpServer)
+initializeWordle(httpServer)
 
 app.options('/createAccount', cors());  // Handle pre-flight for createAccount endpoint
 

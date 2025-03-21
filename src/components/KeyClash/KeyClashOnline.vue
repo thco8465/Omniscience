@@ -139,7 +139,7 @@ import { io } from 'socket.io-client';
 import { useStore } from "vuex";
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-const socket = io(API_URL, { transports: ['websocket'] });
+const socket = io(`${API_URL}/keyclash`, { transports: ['websocket'] });
 const store = useStore();
 
 // Game constants

@@ -23,6 +23,8 @@
 import axios from 'axios'; // Make sure axios is imported
 import WordGrid from './WordGrid.vue'
 import KeyBoard from './KeyBoard.vue'
+import { io } from 'socket.io-client';
+
 
 export default {
     components: {
@@ -47,152 +49,194 @@ export default {
             keyStates_2: {},
             score_2: 0,
             currentPlayer: 1,
+            socket: null, // WebSocket connection
+            gameId: null, // Store game ID for session
         };
     },
     created() {
-        this.fetchWords()
+        this.fetchWords();
+        this.connectToWebSocket();
     },
     methods: {
         async fetchWords() {
             try {
-                // Fetch words from Datamuse API
                 const response = await axios.get('https://api.datamuse.com/words', {
-                    params: {
-                        sp: '?????', // Pattern for 5-letter words (wildcard)
-                        max: 1000,   // Maximum number of words to return
-                    },
+                    params: { sp: '?????', max: 1000 },
                 });
-
-                if (response.data.length === 0) {
-                    console.log("No words found.");
-                    return;
-                }
-
-                const words = response.data.map(wordObj => wordObj.word); // Extract words from the response
-
-                // Check the retrieved words
-                console.log("Fetched words:", words);
-
-                // Assign to data properties
+                if (response.data.length === 0) return;
+                const words = response.data.map(wordObj => wordObj.word);
                 this.wordList = words;
-                this.validWords = words; // All 5-letter words can be valid words
-
-                // Select a random word from the word list
+                this.validWords = words;
                 this.selectRandomWord();
             } catch (error) {
                 console.error("Error fetching words:", error);
             }
         },
+
         selectRandomWord() {
             const randomIndex = Math.floor(Math.random() * this.wordList.length);
             this.targetWord = this.wordList[randomIndex];
-            //console.log(this.targetWord)
         },
+
+        connectToWebSocket() {
+            // Connect to the keyclash namespace on your server (change the URL as needed)
+            this.socket = io(`${API_URL}/wordle`, { transports: ['websocket'] });
+
+            // Emit "Connected" event after successful connection
+            this.socket.emit('Connected', this.socket);
+
+            // Listen for game state updates
+            this.socket.on('gameStateUpdate', (state) => {
+                this.updateGameState(state);
+            });
+
+            // Listen for game over event
+            this.socket.on('gameOver', (message) => {
+                this.gameOver = true;
+                alert(message);
+            });
+
+            // Listen for new guesses
+            this.socket.on('newGuess', (guessData) => {
+                this.handleNewGuess(guessData);
+            });
+        },
+
+        handleNewGuess(data) {
+            // Process the guess from the other player
+            if (data.player === 1) {
+                this.guesses_1.push(data.guess);
+                this.feedback_1.push(data.feedback);
+            } else {
+                this.guesses_2.push(data.guess);
+                this.feedback_2.push(data.feedback);
+            }
+        },
+
+        updateGameState(state) {
+            this.targetWord = state.targetWord;
+            this.guesses_1 = state.guesses_1;
+            this.guesses_2 = state.guesses_2;
+            this.feedback_1 = state.feedback_1;
+            this.feedback_2 = state.feedback_2;
+            this.currentPlayer = state.currentPlayer;
+            this.score_1 = state.score_1;
+            this.score_2 = state.score_2;
+            this.keyStates_1 = state.keyStates_1;
+            this.keyStates_2 = state.keyStates_2;
+        },
+
         addLetter(player_num, letter) {
-            if (player_num === this.currentPlayer) {  // Ensure only the active player can add a letter
-                if (this[`currentGuess_${player_num}`].length < this.targetWord.length) {
-                    this[`currentGuess_${player_num}`] += letter.toUpperCase();
-                }
+            if (player_num === this.currentPlayer && this[`currentGuess_${player_num}`].length < this.targetWord.length) {
+                this[`currentGuess_${player_num}`] += letter.toUpperCase();
+                this.emitGameUpdate();
             }
         },
+
         deleteLetter(player_num) {
-            if (player_num === this.currentPlayer) {  // Ensure only the active player can add a letter
+            if (player_num === this.currentPlayer) {
                 this[`currentGuess_${player_num}`] = this[`currentGuess_${player_num}`].slice(0, -1);
+                this.emitGameUpdate();
             }
         },
+
+        async submitGuess(player_num) {
+            if (this.gameOver || player_num !== this.currentPlayer) return;
+
+            const isValid = await this.validateWord(this[`currentGuess_${player_num}`]);
+            if (!isValid) return alert("Invalid word!");
+
+            const feedback = this.processGuess(player_num);
+            this[`guesses_${player_num}`].push([...this[`currentGuess_${player_num}`].toUpperCase()]);
+            this[`feedback_${player_num}`].push(feedback);
+            this.emitGameUpdate();
+
+            if (this.checkGameOver(player_num)) return;
+
+            this.currentPlayer = this.currentPlayer === 1 ? 2 : 1;
+        },
+
         async validateWord(word) {
             try {
-                // Call Datamuse API to validate the word
-                const response = await axios.get('https://api.datamuse.com/words', {
-                    params: { sp: word, max: 1 },
-                });
-
-                // Check if the API returned a matching word
+                const response = await axios.get('https://api.datamuse.com/words', { params: { sp: word, max: 1 } });
                 return response.data.length > 0 && response.data[0].word.toLowerCase() === word.toLowerCase();
             } catch (error) {
                 console.error("Error validating word:", error);
-                return false; // Assume invalid if there's an error
+                return false;
             }
         },
-        async submitGuess(player_num) {
-            if (this.gameOver) return;
 
-            // Make sure it's the player's turn
-            if (player_num !== this.currentPlayer) {
-                return;
+        processGuess(player_num) {
+            const normalizedGuess = this[`currentGuess_${player_num}`].toLowerCase();
+            const normalizedTarget = this.targetWord.toLowerCase();
+            const feedback = [];
+            const targetCounts = {};
+
+            for (const char of normalizedTarget) {
+                targetCounts[char] = (targetCounts[char] || 0) + 1;
             }
 
-            console.log("Current guess:", this[`currentGuess_${player_num}`]);
+            let correct = 0;
 
-            if (this[`currentGuess_${player_num}`].length === this.targetWord.length) {
-                // Validate the guessed word
-                const isValid = await this.validateWord(this[`currentGuess_${player_num}`]);
-
-                if (!isValid) {
-                    alert("Invalid word! Please guess a valid word.");
-                    return;
+            normalizedGuess.split("").forEach((char, idx) => {
+                if (char === normalizedTarget[idx]) {
+                    feedback[idx] = "correct";
+                    correct++;
+                    targetCounts[char]--;
+                    this[`keyStates_${player_num}`][char] = "correct";
                 }
+            });
 
-                // Normalize to lowercase for comparisons
-                const normalizedGuess = this[`currentGuess_${player_num}`].toLowerCase();
-                const normalizedTarget = this.targetWord.toLowerCase();
-
-                // Initialize feedback and target letter counts
-                const feedback = [];
-                const targetCounts = {};
-                let correct = 0;
-
-                // Count occurrences of each letter in the target word
-                for (const char of normalizedTarget) {
-                    targetCounts[char] = (targetCounts[char] || 0) + 1;
-                }
-
-                // First pass: Mark "correct" letters
-                normalizedGuess.split("").forEach((char, idx) => {
-                    if (char === normalizedTarget[idx]) {
-                        feedback[idx] = "correct";
-                        correct++;
-                        targetCounts[char]--; // Decrement count for this letter
-                        this[`keyStates_${player_num}`][char] = "correct";
+            normalizedGuess.split("").forEach((char, idx) => {
+                if (feedback[idx]) return;
+                if (targetCounts[char] > 0) {
+                    feedback[idx] = "present";
+                    targetCounts[char]--;
+                    this[`keyStates_${player_num}`][char] = "present";
+                } else {
+                    feedback[idx] = "absent";
+                    if (!this[`keyStates_${player_num}`][char]) {
+                        this[`keyStates_${player_num}`][char] = "absent";
                     }
-                });
-
-                // Second pass: Mark "present" and "absent" letters
-                normalizedGuess.split("").forEach((char, idx) => {
-                    if (feedback[idx]) return; // Skip already marked as "correct"
-                    if (targetCounts[char] > 0) {
-                        feedback[idx] = "present";
-                        targetCounts[char]--; // Decrement count for this letter
-                        if (this[`keyStates_${player_num}`][char] !== "correct") {
-                            this[`keyStates_${player_num}`][char] = "present";
-                        }
-                    } else {
-                        feedback[idx] = "absent";
-                        if (!this[`keyStates_${player_num}`][char]) {
-                            this[`keyStates_${player_num}`][char] = "absent";
-                        }
-                    }
-                });
-
-                // Push the guess and its feedback
-                this[`guesses_${player_num}`].push([...this[`currentGuess_${player_num}`].toUpperCase()]);
-                this[`feedback_${player_num}`].push(feedback);
-
-                // Check if the guess is correct
-                this[`score_${player_num}`] = correct;
-                if (normalizedGuess === normalizedTarget) {
-                    alert(`${player_num === 1 ? "Player 1" : "Player 2"} wins!`);
-                    this.gameOver = true;
-                } else if (this[`guesses_${player_num}`].length >= this.maxGuesses) {
-                    alert(`Game Over! The word was ${this.targetWord}`);
-                    this.gameOver = true;
                 }
+            });
 
-                // Reset the current guess
-                this[`currentGuess_${player_num}`] = "";
+            this[`score_${player_num}`] = correct;
+            return feedback;
+        },
 
-                // Toggle the active player after a valid guess
-                this.currentPlayer = this.currentPlayer === 1 ? 2 : 1;
+        checkGameOver(player_num) {
+            const normalizedGuess = this[`currentGuess_${player_num}`].toLowerCase();
+            if (normalizedGuess === this.targetWord.toLowerCase()) {
+                alert(`${player_num === 1 ? "Player 1" : "Player 2"} wins!`);
+                this.gameOver = true;
+                return true;
+            }
+            if (this[`guesses_${player_num}`].length >= this.maxGuesses) {
+                alert(`Game Over! The word was ${this.targetWord}`);
+                this.gameOver = true;
+                return true;
+            }
+            return false;
+        },
+
+        emitGameUpdate() {
+            if (this.socket && this.gameId) {
+                this.socket.emit('gameStateUpdate', {
+                    gameId: this.gameId,
+                    state: {
+                        targetWord: this.targetWord,
+                        guesses_1: this.guesses_1,
+                        guesses_2: this.guesses_2,
+                        feedback_1: this.feedback_1,
+                        feedback_2: this.feedback_2,
+                        currentPlayer: this.currentPlayer,
+                        score_1: this.score_1,
+                        score_2: this.score_2,
+                        keyStates_1: this.keyStates_1,
+                        keyStates_2: this.keyStates_2,
+                    },
+                });
             }
         }
     },

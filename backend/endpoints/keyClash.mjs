@@ -6,22 +6,29 @@ const games = {}; // Store active games in memory
 let io; // Define io outside so it can be initialized later
 let waitingQuickplay = null; // Queue for Quickplay players
 let waitingCustomGames = {}; // Object to track waiting players by room ID
+let keyClashNamespace
 const connectedUsers = {}
 
 // Game constants
 const MAX_STAGES = 5;
 const STAGE_DURATION = 10; // Duration in seconds
 
-function initializeKeyClash(httpServer) {
-    io = new Server(httpServer, {
-        cors: {
-            origin: '*', // Adjust as needed
-            methods: ['GET', 'POST'],
-        }
-    });
+function initializeWebSocketServer(httpServer) {
+    if (!io) {
+        io = new Server(httpServer, {
+            cors: {
+                origin: '*', // Adjust as needed
+                methods: ['GET', 'POST'],
+            },
+        });
+    }
+}
 
-    io.on('connection', (socket) => {
-        console.log(`Player connected: ${socket.id}`);
+function initializeKeyClash() {
+    keyClashNamespace = io.of('/keyclash')
+
+    keyClashNamespace.on('connection', (socket) => {
+        console.log(`Player connected to key clash: ${socket.id}`);
         socket.on('registerUsername', (username) => {
             connectedUsers[username] = socket.id
             socket.username = username;  // Associate username with the socket
@@ -131,14 +138,14 @@ function initializeKeyClash(httpServer) {
                     console.log('inside sender and recipient');
 
                     // Notify both players that the game has started
-                    io.to(roomId).emit('gameStarted', {
+                    keyClashNamespace.to(roomId).emit('gameStarted', {
                         roomId,
                         players: [invite.from_username, invite.to_username]
                     });
                     console.log('emit to both players');
 
                     // Notify both the sender and recipient that the invite was accepted
-                    io.to(roomId).emit('inviteAccepted', {
+                    keyClashNamespace.to(roomId).emit('inviteAccepted', {
                         roomId,
                         players: [invite.from_username, invite.to_username]
                     });
@@ -153,7 +160,7 @@ function initializeKeyClash(httpServer) {
                         currentStage: 1,
                         wins: { player1: 0, player2: 0 },
                         usernames: { player1: invite.from_username, player2: invite.to_username },
-                        user_ids: {player1: 0, player2: 0},
+                        user_ids: { player1: 0, player2: 0 },
                         stageTimer: null
                     };
 
@@ -167,20 +174,20 @@ function initializeKeyClash(httpServer) {
             }
         });
 
-        socket.on('getIds', async({username}) => {
-            try{
+        socket.on('getIds', async ({ username }) => {
+            try {
                 const result = await db.query('SELECT id FROM users WHERE username = $1', [username]);
                 if (result.length === 0) {
                     socket.emit('error', 'Invite not found or already accepted/declined');
                     return;
                 }
                 console.log('acceptInvite');
-            }catch(error){
+            } catch (error) {
                 console.log('id not found by username')
             }
             socket.emit('ReceiveId', result)
         }
-    )
+        )
         // Handle declining an invite
         socket.on('declineInvite', async ({ inviteId }) => {
             // Update the invite status in the database
@@ -203,21 +210,21 @@ function initializeKeyClash(httpServer) {
                 if (!waitingQuickplay) {
                     waitingQuickplay = socket.id;
                     socket.emit('assignPlayer', 'player1');
-                    io.emit('player1Joined');
+                    keyClashNamespace.emit('player1Joined');
                 } else {
                     const roomId = `game-${waitingQuickplay}`;
                     socket.join(roomId);
-                    const player1Socket = io.sockets.sockets.get(waitingQuickplay);
+                    const player1Socket = keyClashNamespace.sockets.get(waitingQuickplay);
                     if (player1Socket) {
                         player1Socket.join(roomId);
                     }
 
                     // Inform both players of their roles and that both players have joined
-                    io.to(waitingQuickplay).emit('assignPlayer', 'player1');
+                    keyClashNamespace.to(waitingQuickplay).emit('assignPlayer', 'player1');
                     socket.emit('assignPlayer', 'player2');
 
-                    io.to(roomId).emit('player1Joined');
-                    io.to(roomId).emit('player2Joined');
+                    keyClashNamespace.to(roomId).emit('player1Joined');
+                    keyClashNamespace.to(roomId).emit('player2Joined');
 
                     // Initialize game state
                     games[roomId] = {
@@ -247,15 +254,15 @@ function initializeKeyClash(httpServer) {
                 } else {
                     const roomId = `game-${customRoomId}`;
                     socket.join(roomId);
-                    const player1Socket = io.sockets.sockets.get(waitingCustomGames[customRoomId]);
+                    const player1Socket = keyClashNamespace.sockets.get(waitingCustomGames[customRoomId]);
 
                     if (player1Socket) {
                         console.log('socket1 exists')
                         player1Socket.join(roomId);
                     }
-                    io.to(waitingCustomGames[customRoomId]).emit('assignPlayer', 'player1'); socket.emit('assignPlayer', 'player2');
-                    io.to(roomId).emit('player1Joined');
-                    io.to(roomId).emit('player2Joined');
+                    keyClashNamespace.to(waitingCustomGames[customRoomId]).emit('assignPlayer', 'player1'); socket.emit('assignPlayer', 'player2');
+                    keyClashNamespace.to(roomId).emit('player1Joined');
+                    keyClashNamespace.to(roomId).emit('player2Joined');
 
                     games[roomId] = {
                         scores: { player1: 0, player2: 0 },
@@ -286,11 +293,11 @@ function initializeKeyClash(httpServer) {
                     games[roomId].usernames[playerKey] = user
                 }
                 // Broadcast player readiness to all players in the room
-                io.to(roomId).emit(`${playerKey}Ready`);
+                keyClashNamespace.to(roomId).emit(`${playerKey}Ready`);
 
                 // Check if both players are ready to start the game
                 if (games[roomId].ready.player1 && games[roomId].ready.player2) {
-                    io.to(roomId).emit('startGame');
+                    keyClashNamespace.to(roomId).emit('startGame');
 
                     // Start first stage after a short delay
                     setTimeout(() => {
@@ -305,7 +312,7 @@ function initializeKeyClash(httpServer) {
         socket.on('startGame', () => {
             const roomId = getPlayerRoom(socket.id);
             if (roomId && games[roomId]) {
-                io.to(roomId).emit('startGame');
+                keyClashNamespace.to(roomId).emit('startGame');
 
                 // Start first stage after a short delay
                 setTimeout(() => {
@@ -320,7 +327,7 @@ function initializeKeyClash(httpServer) {
             if (roomId && games[roomId]) {
                 console.log('getUsernames called: ', games[roomId].usernames);
 
-                io.to(roomId).emit('receiveUsernames', {
+                keyClashNamespace.to(roomId).emit('receiveUsernames', {
                     player1: games[roomId].usernames.player1[0]?.username || "player 1",
                     player2: games[roomId].usernames.player2[0]?.username || "player 2"
                 });
@@ -333,7 +340,7 @@ function initializeKeyClash(httpServer) {
             if (roomId) {
                 // Only relay keys from player1 to prevent duplicates
                 if (getPlayerRole(socket.id, roomId) === 'player1') {
-                    io.to(roomId).emit('keyGenerated', key);
+                    keyClashNamespace.to(roomId).emit('keyGenerated', key);
                 }
             }
         });
@@ -341,7 +348,7 @@ function initializeKeyClash(httpServer) {
         socket.on('keyPress', ({ playerID, key }) => {
             const roomId = getPlayerRoom(socket.id);
             if (roomId && games[roomId]) {
-                io.to(roomId).emit('keyPress', { playerID, key });
+                keyClashNamespace.to(roomId).emit('keyPress', { playerID, key });
             }
         });
 
@@ -354,7 +361,7 @@ function initializeKeyClash(httpServer) {
 
             games[roomId].scores[playerKey] += score;
             games[roomId].total_scores[playerKey] += score;
-            io.to(roomId).emit('updateScore', { player: playerKey, score });
+            keyClashNamespace.to(roomId).emit('updateScore', { player: playerKey, score });
         });
 
 
@@ -362,7 +369,7 @@ function initializeKeyClash(httpServer) {
             const roomId = getPlayerRoom(socket.id);
             if (roomId && games[roomId] && games[roomId].currentStage === currentStage) {
                 // Notify all clients that the timer has ended
-                io.to(roomId).emit('timerEnded');
+                keyClashNamespace.to(roomId).emit('timerEnded');
 
                 // Clear the server-side timer if it exists
                 if (games[roomId].stageTimer) {
@@ -416,7 +423,7 @@ function initializeKeyClash(httpServer) {
                 games[roomId].currentStage = 1;
                 games[roomId].wins = { player1: 0, player2: 0 };
                 games[roomId].stageTimer = null
-                io.to(roomId).emit('resetGame');
+                keyClashNamespace.to(roomId).emit('resetGame');
             }
         });
 
@@ -453,7 +460,7 @@ function initializeKeyClash(httpServer) {
                     const key = getPlayerRole(socket.id, roomId);  // Gets 'player1' or 'player2'
                     //console.log(games[roomId].usernames, games[roomId].usernames[key], games[roomId].usernames[key][0].username)
                     const name = games[roomId].usernames[key]?.[0]?.username || `${key} (unknown)`;  // Access the correct player's username
-                    io.to(roomId).emit('playerDisconnected', name);
+                    keyClashNamespace.to(roomId).emit('playerDisconnected', name);
 
                     // Remove the player from the game
                     games[roomId].players = games[roomId].players.filter(id => id !== socket.id);
@@ -490,7 +497,7 @@ function initializeKeyClash(httpServer) {
         console.log(`Starting stage ${stageNumber} in room ${roomId}`);
 
         // Notify clients to start the stage
-        io.to(roomId).emit('startStage', stageNumber);
+        keyClashNamespace.to(roomId).emit('startStage', stageNumber);
 
         // Set up server-side timer for stage duration
         let timeRemaining = STAGE_DURATION;
@@ -503,7 +510,7 @@ function initializeKeyClash(httpServer) {
         // Create a new timer that will end the stage after STAGE_DURATION
         games[roomId].stageTimer = setTimeout(() => {
             if (games[roomId] && games[roomId].stageStarted) {
-                io.to(roomId).emit('timerEnded');
+                keyClashNamespace.to(roomId).emit('timerEnded');
                 endStage(roomId);
             }
         }, STAGE_DURATION * 1000);
@@ -516,7 +523,7 @@ function initializeKeyClash(httpServer) {
             }
 
             timeRemaining--;
-            io.to(roomId).emit('updateTimer', timeRemaining);
+            keyClashNamespace.to(roomId).emit('updateTimer', timeRemaining);
 
             if (timeRemaining <= 0) {
                 clearInterval(timerInterval);
@@ -570,7 +577,7 @@ function initializeKeyClash(httpServer) {
         }
 
         // Send consistent state to all players
-        io.to(roomId).emit('endStage', gameState);
+        keyClashNamespace.to(roomId).emit('endStage', gameState);
 
         // Check for game over
         const maxWins = Math.ceil(MAX_STAGES / 2);
@@ -592,7 +599,7 @@ function initializeKeyClash(httpServer) {
                 const nextStage = games[roomId].currentStage + 1;
 
                 // Notify clients about the next stage
-                io.to(roomId).emit('nextStage', nextStage);
+                keyClashNamespace.to(roomId).emit('nextStage', nextStage);
 
                 // Start the next stage
                 startStage(roomId, nextStage);
@@ -604,13 +611,13 @@ function initializeKeyClash(httpServer) {
         if (!games[roomId]) return;
         const total_scores = games[roomId].total_scores
         //console.log(total_scores)
-        
+
 
         console.log(`Game over in ${roomId}, Player ${winner} wins!`);
         if (winner == 3) {
-            io.to(roomId).emit('gameOver', `Total Scores: Player 1 - ${total_scores.player1}, Player 2- ${total_scores.player2}. It's a tie game!`);
+            keyClashNamespace.to(roomId).emit('gameOver', `Total Scores: Player 1 - ${total_scores.player1}, Player 2- ${total_scores.player2}. It's a tie game!`);
         } else {
-            io.to(roomId).emit('gameOver', `Total Scores: Player 1 - ${total_scores.player1}, Player 2- ${total_scores.player2}. Player ${winner} wins the game!`);
+            keyClashNamespace.to(roomId).emit('gameOver', `Total Scores: Player 1 - ${total_scores.player1}, Player 2- ${total_scores.player2}. Player ${winner} wins the game!`);
         }
 
         // Clear any active timers
@@ -634,7 +641,7 @@ const getPlayerRoom = (socketId) => {
     return Object.keys(games).find(room => games[room].players.includes(socketId));
 };
 const getSocketByUsername = (username) => {
-    return io.sockets.sockets.get(connectedUsers[username]);
+    return keyClashNamespace.sockets.get(connectedUsers[username]);
 };
 
 
@@ -645,4 +652,114 @@ const getPlayerRole = (socketId, roomId) => {
     const index = games[roomId].players.indexOf(socketId);
     return index === 0 ? 'player1' : index === 1 ? 'player2' : null;
 };
-export { initializeKeyClash }
+
+// Initialize Wordle WebSocket server
+function initializeWordle() {
+    const wordleNamespace = io.of('/wordle'); // Create a separate namespace for Wordle
+
+    wordleNamespace.on('connection', (socket) => {
+        console.log(`Player connected to Wordle: ${socket.id}`);
+
+        // Handle new player joining a game
+        socket.on('joinGame', (gameId) => {
+            console.log(`Player ${socket.id} joined Wordle game: ${gameId}`);
+            socket.join(gameId); // Join the specific game room
+
+            // Optionally, send game state to the joining player (e.g., current guesses, turn, etc.)
+            const gameState = getGameState(gameId);
+            socket.emit('gameStateUpdate', gameState);
+        });
+
+        // Handle submitting a guess
+        socket.on('submitGuess', (guessData) => {
+            console.log('Received Wordle guess:', guessData);
+
+            // Process the guess
+            const feedback = processGuess(guessData); // Implement your guess processing logic
+
+            // Broadcast the guess and feedback to the other player(s)
+            wordleNamespace.to(guessData.gameId).emit('newGuess', {
+                player: guessData.player,
+                guess: guessData.guess,
+                feedback: feedback,
+            });
+
+            // Check if game over
+            if (checkGameOver(guessData.gameId)) {
+                wordleNamespace.to(guessData.gameId).emit('gameOver', { message: `Player ${guessData.player} wins!` });
+            }
+        });
+
+        // Handle game over event
+        socket.on('gameOver', (gameId) => {
+            console.log(`Game Over for game: ${gameId}`);
+            wordleNamespace.to(gameId).emit('gameOver', { message: 'Game over!' });
+        });
+
+        // Optionally, you can handle other events such as player disconnection
+        socket.on('disconnect', () => {
+            console.log(`Player disconnected: ${socket.id}`);
+        });
+    });
+}
+
+// Helper function to get game state (for sending to new player)
+function getGameState(gameId) {
+    // Fetch the current state of the game (guesses, scores, turns, etc.)
+    return {
+        targetWord: "example", // Replace with actual word
+        guesses_1: [],
+        guesses_2: [],
+        feedback_1: [],
+        feedback_2: [],
+        currentPlayer: 1,
+        score_1: 0,
+        score_2: 0,
+        keyStates_1: {},
+        keyStates_2: {},
+    };
+}
+
+// Helper function to process the guess
+function processGuess(guessData) {
+    const normalizedGuess = guessData.guess.toLowerCase();
+    const normalizedTarget = "example".toLowerCase(); // Replace with actual target word
+    const feedback = [];
+    const targetCounts = {};
+
+    // Initialize target counts
+    for (const char of normalizedTarget) {
+        targetCounts[char] = (targetCounts[char] || 0) + 1;
+    }
+
+    let correct = 0;
+
+    // Mark "correct" letters
+    normalizedGuess.split("").forEach((char, idx) => {
+        if (char === normalizedTarget[idx]) {
+            feedback[idx] = "correct";
+            correct++;
+            targetCounts[char]--;
+        }
+    });
+
+    // Mark "present" or "absent" letters
+    normalizedGuess.split("").forEach((char, idx) => {
+        if (feedback[idx]) return; // Skip already marked letters
+        if (targetCounts[char] > 0) {
+            feedback[idx] = "present";
+            targetCounts[char]--;
+        } else {
+            feedback[idx] = "absent";
+        }
+    });
+
+    return feedback;
+}
+
+// Helper function to check if the game is over
+function checkGameOver(gameId) {
+    // Check if the game is over (either word guessed or max guesses reached)
+    return false; // Implement your game over logic
+}
+export { initializeKeyClash, initializeWordle, initializeWebSocketServer }

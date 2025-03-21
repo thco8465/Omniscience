@@ -141,7 +141,7 @@ import { useRoute } from 'vue-router';
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-const socket = io(API_URL, { transports: ['websocket'] });
+const socket = io(`${API_URL}/keyclash`, { transports: ['websocket'] });
 const store = useStore();
 const route = useRoute()
 const { roomId, players } = route.query;
