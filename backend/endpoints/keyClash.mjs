@@ -22,9 +22,10 @@ function initializeWebSocketServer(httpServer) {
             },
         });
     }
+    return io;
 }
 
-function initializeKeyClash() {
+function initializeKeyClash(io) {
     keyClashNamespace = io.of('/keyclash')
 
     keyClashNamespace.on('connection', (socket) => {
@@ -653,113 +654,4 @@ const getPlayerRole = (socketId, roomId) => {
     return index === 0 ? 'player1' : index === 1 ? 'player2' : null;
 };
 
-// Initialize Wordle WebSocket server
-function initializeWordle() {
-    const wordleNamespace = io.of('/wordle'); // Create a separate namespace for Wordle
-
-    wordleNamespace.on('connection', (socket) => {
-        console.log(`Player connected to Wordle: ${socket.id}`);
-
-        // Handle new player joining a game
-        socket.on('joinGame', (gameId) => {
-            console.log(`Player ${socket.id} joined Wordle game: ${gameId}`);
-            socket.join(gameId); // Join the specific game room
-
-            // Optionally, send game state to the joining player (e.g., current guesses, turn, etc.)
-            const gameState = getGameState(gameId);
-            socket.emit('gameStateUpdate', gameState);
-        });
-
-        // Handle submitting a guess
-        socket.on('submitGuess', (guessData) => {
-            console.log('Received Wordle guess:', guessData);
-
-            // Process the guess
-            const feedback = processGuess(guessData); // Implement your guess processing logic
-
-            // Broadcast the guess and feedback to the other player(s)
-            wordleNamespace.to(guessData.gameId).emit('newGuess', {
-                player: guessData.player,
-                guess: guessData.guess,
-                feedback: feedback,
-            });
-
-            // Check if game over
-            if (checkGameOver(guessData.gameId)) {
-                wordleNamespace.to(guessData.gameId).emit('gameOver', { message: `Player ${guessData.player} wins!` });
-            }
-        });
-
-        // Handle game over event
-        socket.on('gameOver', (gameId) => {
-            console.log(`Game Over for game: ${gameId}`);
-            wordleNamespace.to(gameId).emit('gameOver', { message: 'Game over!' });
-        });
-
-        // Optionally, you can handle other events such as player disconnection
-        socket.on('disconnect', () => {
-            console.log(`Player disconnected: ${socket.id}`);
-        });
-    });
-}
-
-// Helper function to get game state (for sending to new player)
-function getGameState(gameId) {
-    // Fetch the current state of the game (guesses, scores, turns, etc.)
-    return {
-        targetWord: "example", // Replace with actual word
-        guesses_1: [],
-        guesses_2: [],
-        feedback_1: [],
-        feedback_2: [],
-        currentPlayer: 1,
-        score_1: 0,
-        score_2: 0,
-        keyStates_1: {},
-        keyStates_2: {},
-    };
-}
-
-// Helper function to process the guess
-function processGuess(guessData) {
-    const normalizedGuess = guessData.guess.toLowerCase();
-    const normalizedTarget = "example".toLowerCase(); // Replace with actual target word
-    const feedback = [];
-    const targetCounts = {};
-
-    // Initialize target counts
-    for (const char of normalizedTarget) {
-        targetCounts[char] = (targetCounts[char] || 0) + 1;
-    }
-
-    let correct = 0;
-
-    // Mark "correct" letters
-    normalizedGuess.split("").forEach((char, idx) => {
-        if (char === normalizedTarget[idx]) {
-            feedback[idx] = "correct";
-            correct++;
-            targetCounts[char]--;
-        }
-    });
-
-    // Mark "present" or "absent" letters
-    normalizedGuess.split("").forEach((char, idx) => {
-        if (feedback[idx]) return; // Skip already marked letters
-        if (targetCounts[char] > 0) {
-            feedback[idx] = "present";
-            targetCounts[char]--;
-        } else {
-            feedback[idx] = "absent";
-        }
-    });
-
-    return feedback;
-}
-
-// Helper function to check if the game is over
-function checkGameOver(gameId) {
-    // Check if the game is over (either word guessed or max guesses reached)
-    return false; // Implement your game over logic
-}
-export { initializeKeyClash, initializeWordle, initializeWebSocketServer }
+export { initializeKeyClash, initializeWebSocketServer }

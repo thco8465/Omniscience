@@ -16,7 +16,7 @@ const navigateToGame = (route) => {
 const games = [
   { name: 'Hangman', route: '/HangView' },
   { name: 'Alpha Arena', route: '/AlphaArena' },
-  {name: 'Alpha Online', route: '/AlphaOnline'},
+  {name: 'Alpha Arena(Quickplay)', route: '/AlphaOnline'},
   { name: 'Terminology Twisters', route: '/Scramble' },
   { name: 'Click-a-Palooza', route: '/ShapeClicker' },
   { name: 'Tiles of Terror', route: '/Tiles' },
