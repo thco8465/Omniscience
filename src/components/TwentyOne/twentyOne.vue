@@ -421,7 +421,9 @@ export default {
     min-height: 140px;
     margin: 15px 0;
 }
-
+.login-prompt{
+    
+}
 .card {
     width: 100px;
     height: auto;

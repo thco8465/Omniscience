@@ -365,7 +365,6 @@ onMounted(() => {
 onUnmounted(() => {
     window.removeEventListener('keydown', handleKeyPress);
     clearInterval(keyGenerationInterval);
-    clearInterval(gameUpdateInterval);
     clearInterval(stageTimerInterval);
 });
 </script>
@@ -540,7 +539,7 @@ onUnmounted(() => {
 
 .key.right {
     left: 88%;
-    background-color: #FF9800;
+    background-color: #f7c948;
 }
 
 .key.hit {
@@ -606,8 +605,8 @@ onUnmounted(() => {
 }
 
 .right-target {
-    background-color: rgba(255, 152, 0, 0.8);
-    border-color: #FF9800;
+    background-color: #f7c948;
+    border-color: #ebd69a;
 }
 
 /* Controls */

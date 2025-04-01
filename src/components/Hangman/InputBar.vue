@@ -44,7 +44,7 @@
   }
   .space{
     min-width: 20px;
-    background: white;
+    background: #8e44ad;
   }
   </style>
   

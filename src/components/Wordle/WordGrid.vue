@@ -106,6 +106,7 @@
     align-items: center;
     font-size: 24px;
     box-sizing: border-box;
+    color: black;
     /* Ensures padding/border doesn't affect size */
 }
 

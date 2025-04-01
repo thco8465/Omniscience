@@ -23,6 +23,7 @@
             <RouterLink v-if="userId !== -1" to="/Achievements">Achievements</RouterLink>
             <RouterLink to="/Leaderboards">Leaderboards</RouterLink>
             <RouterLink to="/Store">Store</RouterLink>
+            <RouterLink to="/AboutSite">About</RouterLink>
             <RouterLink v-if="userId === -1" to="/Login">Login</RouterLink>
           </div>
           <div class="logout-container">
@@ -62,7 +63,7 @@ export default {
 </script>
 <style scoped>
 header {
-  background-color: #2c3e50;
+  background-color: #8e44ad;
   padding: 1rem 0;
   border-radius: 5px;
 }
@@ -110,8 +111,8 @@ nav a:hover,
 .nav-section button:hover,
 .dropbtn:hover,
 nav a.router-link-exact-active {
-  background-color: #3498db;
-  color: gold;
+  background-color: #4a90e2;
+  color: #f7c948;
   transform: scale(1.1);
 }
 

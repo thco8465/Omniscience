@@ -14,20 +14,26 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="title">
-    OMNISCIENCE
-    <div v-if="equippedAvatar" class="avatar-container">
-      <img :src="`${equippedAvatar}`" alt="Avatar" class="avatar" />
+  <div class="container">
+    <div class="title">
+      OMNISCIENCE
+      <div v-if="equippedAvatar" class="avatar-container">
+        <img :src="`${equippedAvatar}`" alt="Avatar" class="avatar" />
+      </div>
     </div>
-  </div>
-  <div>
-    <MainMenu />
-  </div>
-  <div class="route">
-    <RouterView />
+    <div class="main-menu">
+      <MainMenu />
+    </div>
+    <div class="route">
+      <RouterView />
+    </div>
   </div>
 </template>
 <style scoped>
+.container{
+  border-radius: 5px;
+  width: 100%;
+}
 .avatar-container {
   width: 50px;
   height: 50px;
@@ -42,23 +48,30 @@ onMounted(() => {
   height: 100%;
   object-fit: cover;
 }
+
 .title {
   display: flex;
   /* justify-content: center; */
   margin-left: 25px;
   align-items: center;
-  color: gold;
+  justify-content: center;
+  color: #f7c948;
   font-size: 32px;
   letter-spacing: -1.5px;
-  text-shadow: 3px 3px 3px #002823, -1px 0 3px #002823;
+  text-shadow: 2px 2px 2px #002823, -1px 0 3px #002823;
   font-family: 'Libre Baskerville', serif;
 }
-.route{
+.main-menu{
+  padding: 5px;
+}
+.route {
   margin-top: 5px;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 10px
 }
+
 header {
   line-height: 1.5;
   max-height: 100vh;

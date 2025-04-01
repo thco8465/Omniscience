@@ -14,6 +14,7 @@
     <h1 class="game-title">Copy Cat</h1>
     <div v-if="showSequence">
       <h2>Memorize the Sequence (Level {{ level }}):</h2>
+      <h3>Time left to memorize: {{ this.countdown }}</h3>
       <p>{{ sequence }}</p>
     </div>
     <div v-if="showCountdown">
@@ -67,10 +68,19 @@ export default {
         this.sequence = this.generateSequence();
       this.showSequence = true;
       // Show sequence for 5 seconds
-      this.sequenceTimer = setTimeout(() => {
-        this.showSequence = false;
-        this.startCountdown();
-      }, 5000); // 5 seconds
+      // this.sequenceTimer = setTimeout(() => {
+      //   this.showSequence = false;
+      //   this.startCountdown();
+      // }, 5000); // 5 seconds
+      this.countdown = 10; // Start with 10 seconds countdown
+      this.countdownTimer = setInterval(() => {
+        this.countdown--;
+        if (this.countdown === 0) {
+          this.showSequence = false;  // Automatically check when time runs out
+          clearInterval(this.countdownTimer); // Stop the countdown timer when checking the sequence
+          this.startCountdown()
+        }
+      }, 1000); // Update countdown every second
     },
     generateSequence() {
       const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';

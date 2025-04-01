@@ -8,6 +8,7 @@ export default createStore({
     equippedAvatar: null,
     equippedBackground: null,
     equippedCard: "default-card",
+    backgroundPosition: 50, // Default center
   },
   mutations: {
     // Define the setUser mutation
@@ -25,7 +26,10 @@ export default createStore({
     setEquippedCard(state, card){
       console.log("Setting equipped card:", card)
       state.equippedCard = card || "default-card";
-    }
+    },
+    setBackgroundPosition(state, position) {
+      state.backgroundPosition = position;
+    },
   },
   actions: {
     // If you're calling the mutation from an action

@@ -199,6 +199,10 @@ export default {
             </div>
         </div>
         <div v-if="start" class="container">
+            <div v-if="gameOver" class="game-over">
+                <h2>{{ gameOverMessage }}, Score: {{ score }}</h2>
+                <button @click="restartGame">Play Again</button>
+            </div>
             <div class="hang">
                 <HangMan :wrongGuesses="wrongGuesses" />
             </div>
@@ -207,24 +211,20 @@ export default {
             </div>
             <KeyBoard :keyStates="keyStates" @letter="handleLetterPress" @delete="handleDelete"
                 @submit="handleSubmit" />
-            <div v-if="gameOver" class="game-over">
-                <h2>{{ gameOverMessage }}, Score: {{ score }}</h2>
-                <button @click="restartGame">Play Again</button>
-            </div>
         </div>
     </main>
 </template>
-<style>
+<style scoped>
 .container {
     text-align: center;
     margin-top: 50px;
     font-family: Arial, sans-serif;
     text-align: center;
     margin: 20px auto;
-    background-color: #f4f4f4;
+    background-color: #8E44AD;
     padding: 20px;
     border-radius: 10px;
-    max-width: 600px;
+    max-width: 10000px;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
@@ -264,12 +264,12 @@ export default {
 }
 
 h2 {
-    color: #007bff;
+    color: #4a90e2;
 }
 
 .button-info {
     padding: 15px 30px;
-    background-color: #3498db;
+    background-color: #4a90e2;
     border: none;
     border-radius: 5px;
     color: white;

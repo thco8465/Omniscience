@@ -264,10 +264,10 @@ export default {
 
 <style scoped>
 .game-title {
-  color: gold;
-  text-shadow: 1px 1px 1px white, -1px 0 3px #002823;
+  color: #f7c948;
+  text-shadow: 1px 1px 1px black, -1px 0 3px #002823;
   font-family: 'Libre Baskerville', serif;
-  background-color: #2c3e50;
+  background-color: #8e44ad;
   border-radius: 15px;
   display: flex;
   justify-content: center;
@@ -292,7 +292,7 @@ export default {
   width: 100%;
   max-width: 700px;
   margin: 0 auto;
-  background-color: #f4f4f4;
+  background-color: #4a90e2;
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   position: relative;
@@ -338,6 +338,8 @@ export default {
   color: white;
   font-size: 18px;
   cursor: pointer;
+  transition: background-color 1s ease
+
 }
 
 .button-info:hover {

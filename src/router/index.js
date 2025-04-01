@@ -20,6 +20,10 @@ import KeyClashOnline from '@/components/KeyClash/KeyClashOnline.vue'
 import KeyClashInvite from '@/components/KeyClash/KeyClashRoom.vue'
 import inviteClash from '@/components/KeyClash/InviteClash.vue'
 import AlphaOnline from '@/components/Wordle/WordleOnline.vue'
+import AlphaRoom from '@/components/Wordle/WordleRoom.vue'
+import AlphaCustom from '@/components/Wordle/WordleInvite.vue'
+import ScenicView from '@/views/ScenicView.vue'
+import AboutSite from '@/components/AboutSite.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -128,6 +132,26 @@ const router = createRouter({
       path: '/AlphaOnline',
       name: 'AlphaOnline',
       component: AlphaOnline
+    },
+    {
+      path: '/AlphaRoom',
+      name: 'AlphaRoom',
+      component: AlphaRoom
+    },
+    {
+      path: '/AlphaCustom',
+      name: 'AlphaCustom',
+      component: AlphaCustom
+    },
+    {
+      path: '/ScenicView',
+      name: 'ScenicView',
+      component: ScenicView,
+    },
+    {
+      path:'/AboutSite',
+      name: '/AboutSite',
+      component: AboutSite
     }
   ],
 })

@@ -28,11 +28,15 @@
       <p v-if="medal">You earned the {{ medal }} medal</p>
 
       <!-- Show the list of words and definitions -->
-      <div class ="definitions" v-if="wordList.length">
+      <div class="definitions" v-if="wordList.length">
         <h3>Words and Definitions</h3>
         <ul :style="{ fontSize: fontSize }">
           <li v-for="(item, index) in wordList" :key="index">
-            <strong>{{ item.word }}:</strong> {{ item.definition }}
+            <strong>{{ item.word }}</strong>
+            <span v-if="item.definition.match(/^\w+/)">
+              ({{ item.definition.match(/^\w+/)[0] }})
+            </span>:
+            {{ item.definition.replace(/^\w+\s*/, '') }}
           </li>
         </ul>
       </div>
@@ -224,14 +228,15 @@ export default {
   align-items: center;
   justify-content: center;
   /* height: 40vh; */
-  min-height: 40vh; /* Optional: set a minimum height, but let it grow */
+  min-height: 40vh;
+  /* Optional: set a minimum height, but let it grow */
   text-align: center;
   text-align: center;
   margin-top: 50px;
   font-family: Arial, sans-serif;
   text-align: center;
   margin: 20px auto;
-  background-color: #f4f4f4;
+  background-color: #f7c948;
   padding: 20px;
   border-radius: 10px;
   max-width: 600px;
@@ -287,10 +292,10 @@ export default {
 }
 
 .game-title {
-  color: gold;
-  text-shadow: 1px 1px 1px white, -1px 0 3px #002823;
+  color: #f7c948;
+  text-shadow: 1px 1px 1px black, -1px 0 3px #002823;
   font-family: 'Libre Baskerville', serif;
-  background-color: #2c3e50;
+  background-color: #8e44ad;
   border-radius: 15px;
   display: flex;
   justify-content: center;
@@ -301,18 +306,24 @@ export default {
   margin-top: 20px;
   text-align: center;
 }
+
 .definitions {
-  max-height: 200px; /* Set a maximum height to limit the container */
-  overflow-y: auto; /* Enable vertical scrolling when the content overflows */
+  max-height: 200px;
+  /* Set a maximum height to limit the container */
+  overflow-y: auto;
+  /* Enable vertical scrolling when the content overflows */
   margin-top: 20px;
   padding: 10px;
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 3px solid #8e44ad;
+  text-align: left;
 }
+
 button {
   padding: 10px;
-  background-color: #DFFF00;
-  color: #8e44ad;
+  background-color: #8e44ad;
+  color: #f7c948;
   border: none;
   cursor: pointer;
   font-size: 16px;
@@ -320,10 +331,11 @@ button {
   margin-left: 5px;
   font-family: 'Arcade Classic', sans-serif;
   border-radius: 15px;
+  transition: background-color 1s ease, opacity 1s ease;
 }
 
 button:hover {
-  background-color: rgb(160, 231, 160);
+  background-color: #4a90e2;
 }
 
 .shake {

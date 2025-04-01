@@ -12,7 +12,9 @@
   <div v-if="start" id="app" class="wordle-container">
     <h1 class="game-title">Alpha Arena</h1>
     <div v-if="showEnd" class="endMsg">
-      <p>You have earned the {{ medal }} Medal!</p>
+      <p v-if="medal">You have earned the {{ medal }} Medal!</p>
+      <p v-else>Game Over</p>
+      <button @click="resetGame" class="playAgain-btn">Play Again</button>
     </div>
     <WordGrid :guesses="guesses" :maxGuesses="6" :feedback="feedback" :currentGuess="currentGuess" />
     <KeyBoard @letter="addLetter" @delete="deleteLetter" @submit="submitGuess" :keyStates="keyStates" />
@@ -73,6 +75,24 @@ export default {
   methods: {
     startGame() {
       this.start = true;
+    },
+    resetGame(){
+      this.start= false,
+      this.wordList= [],
+      this.validWords= [],
+      this.targetWord= "",
+      this.definition= "",
+      this.guesses= [],
+      this.currentGuess= "",
+      this.maxGuesses= 6,
+      this.feedback= [],
+      this.keyStates= {},
+      this.showHintModal= false,
+      this.hint= "",
+      this.score= 0,
+      this.medal= '',
+      this.showEnd= false
+      this.fetchWords()
     },
     async getDefinitionHint() {
       this.hint = "Fetching definition...";
@@ -484,6 +504,20 @@ button:active {
 
 .title {
   animation: slideIn 1s ease-in-out;
+}
+.playAgain-btn{
+  margin: 20px;
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #4e54c8;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.playAgain-btn:hover{
+  background-color: #8f94fb;
 }
 
 .hint-button {

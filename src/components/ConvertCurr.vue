@@ -2,7 +2,7 @@
     <div class="container">
         <h1>Convert Currency</h1>
         <div>
-            <div>
+            <div class="headers">
                 <h1>Gold: {{ currG }} 🥇</h1>
                 <h1>Silver: {{ currS }} 🥈</h1>
                 <h1>Bronze: {{ currB }} 🥉</h1>
@@ -143,11 +143,14 @@ export default {
     },
 }
 </script>
-<style>
+<style scoped>
 .container {
     background-color: #2c3e50;
     color: white;
     border-radius: 5px;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
 }
 
 .GtoS {
@@ -158,6 +161,7 @@ export default {
     box-shadow: inset 2px 2px 5px rgba(255, 255, 255, 0.6),
         inset -2px -2px 5px rgba(0, 0, 0, 0.3);
     border: 1px solid #b0b0b0;
+    color: black;
 }
 
 .GtoB,
@@ -169,6 +173,7 @@ export default {
     box-shadow: inset 2px 2px 5px rgba(255, 255, 255, 0.4),
         inset -2px -2px 5px rgba(0, 0, 0, 0.3);
     border: 1px solid #8c5a22;
+    color: black;
 }
 
 .btns {

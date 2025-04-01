@@ -35,10 +35,10 @@ export default {
     align-items: flex-start;
 }
 .game-title{
-    color: gold;
-    text-shadow: 1px 1px 1px white, -1px 0 3px #002823;
+    color: #f7c948;
+    text-shadow: 1px 1px 1px black, -1px 0 3px #002823;
     font-family: 'Libre Baskerville', serif;
-    background-color: #2c3e50;
+    background-color: #8E44AD;
     border-radius: 15px;
     display: flex;
     justify-content: center;
@@ -86,7 +86,7 @@ export default {
     width: 30px;
     height: 30px;
     border-radius: 50%;
-    border: 4px solid black;
+    border: 4px solid #e63946;
     background-color: transparent;
     position: absolute;
     left: 31.5px;
@@ -95,7 +95,7 @@ export default {
 .body {
     width: 4px;
     height: 65px;
-    background-color: black;
+    background-color: #e63946;
     position: absolute;
     top: 35px;
     left: 48px;
@@ -104,7 +104,7 @@ export default {
 .arm {
     width: 30px;
     height: 4px;
-    background-color: black;
+    background-color: #e63946;
     position: absolute;
     top: 50px;
 }
@@ -122,9 +122,9 @@ export default {
 .leg {
     width: 30px;
     height: 4px;
-    background-color: black;
+    background-color: #e63946;
     position: absolute;
-    top: 100px;
+    top: 102px;
 }
 
 .leg.left {

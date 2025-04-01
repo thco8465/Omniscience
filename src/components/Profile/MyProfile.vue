@@ -49,6 +49,7 @@
       <div class="cosmetics-container">
         <div class="cosmetic-column">
           <h3>Backgrounds</h3>
+          <button @click="background">View Full Equipped Background</button>
           <ul>
             <li v-for="bg in backgrounds" :key="bg.id">
               <img :src="bg.image_url" alt="Background" class="cosmetic-image" />
@@ -95,9 +96,13 @@
 import { ref, computed, onMounted, watchEffect } from 'vue';
 import { useStore } from 'vuex';
 import axios from 'axios';
+import router from '@/router';
 
 export default {
   methods: {
+    background(){
+      this.$router.push('/ScenicView')
+    },
     getColorFromClass(styleClass) {
       // Map style class to color
       const colors = {
