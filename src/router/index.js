@@ -24,6 +24,7 @@ import AlphaRoom from '@/components/Wordle/WordleRoom.vue'
 import AlphaCustom from '@/components/Wordle/WordleInvite.vue'
 import ScenicView from '@/views/ScenicView.vue'
 import AboutSite from '@/components/AboutSite.vue'
+import MyStats from '@/components/Statistics/MyStats.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -152,6 +153,11 @@ const router = createRouter({
       path:'/AboutSite',
       name: '/AboutSite',
       component: AboutSite
+    },
+    {
+      path:'/MyStats',
+      name: 'MyStats',
+      component: MyStats,
     }
   ],
 })

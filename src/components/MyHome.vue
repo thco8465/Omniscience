@@ -1,10 +1,6 @@
 <script setup>
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
-import { ref } from "vue";
-
-const isOpen = ref(false);
-
 // Access the store to get the userId
 const store = useStore();
 const userId = store.state.user?.id; // Use optional chaining to avoid errors if user is undefined
@@ -20,7 +16,7 @@ const games = [
   { name: 'Hangman', route: '/HangView' },
   { name: 'Alpha Arena', route: '/AlphaArena' },
   { name: 'Alpha Arena(Quickplay)', route: '/AlphaOnline' },
-  {name: 'Alpha Arena (Custom)', route: '/AlphaRoom'},
+  { name: 'Alpha Arena (Custom)', route: '/AlphaRoom' },
   { name: 'Terminology Twisters', route: '/Scramble' },
   { name: 'Click-a-Palooza', route: '/ShapeClicker' },
   { name: 'Tiles of Terror', route: '/Tiles' },
@@ -37,25 +33,13 @@ const games = [
   <main>
     <!-- Display message only if userId is falsy (user not logged in) -->
     <h1 v-if="!userId">Create an account and login to earn medals, save progress, and customize your profile!</h1>
-    <div class="color-container">
-      <button @click="isOpen = !isOpen" class="dropdown-button">
-        {{ isOpen ? "Hide Color Impact" : "Show Color Impact" }}
-      </button>
-
-      <div v-if="isOpen" class="color">
-        <h1>Color Impact on Cognition</h1>
-        <h2 class="blu">🔵 Blue - Enhances Focus & Productivity</h2>
-        <h2 class="gree">🟢 Green - Supports Balance & Learning</h2>
-        <h2 class="yello">🟡 Yellow - Stimulates Attention & Creativity</h2>
-        <h2 class="re">🔴 Red - Boosts Alertness & Emotion-Driven Memory</h2>
-        <h2 class="purpl">🟣 Purple - Aids in Problem-Solving & Retention</h2>
-      </div>
-    </div>
     <!-- Game Grid -->
     <div class="game-grid">
       <template v-for="(game, index) in games" :key="index">
-      <!-- If not signed in, Key Clash Online(Custom), Alpha Arena (Custom) -->
-        <div v-if="!(game.name === 'Key Clash Online (Custom)' || game.name === 'Alpha Arena (Custom)' && !userId)" class="game-card">
+        <!-- If not signed in, Key Clash Online(Custom), Alpha Arena (Custom) -->
+        <div
+          v-if="!(game.name === 'Key Clash Online (Custom)' && !userId || game.name === 'Alpha Arena (Custom)' && !userId)"
+          class="game-card">
           <h2>{{ game.name }}</h2>
           <button @click="navigateToGame(game.route)">
             Play
@@ -68,42 +52,22 @@ const games = [
 
 <style scoped>
 h1 {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Libre Baskerville', serif;
   font-size: 1.75rem;
   font-weight: 600;
   text-align: center;
-  color: #333;
-  background-color: #f4f4f4;
+  color: rgba(51, 51, 51, 0.9);
+  background-color: rgba(244, 244, 244, 0.9);
   padding: 20px;
   margin: 20px auto;
   border-radius: 8px;
   width: 80%;
   max-width: 600px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  border-left: 5px solid #4caf50;
+  border-left: 5px solid rgba(76, 175, 80, 0.8);
   transition: transform 0.3s ease;
 }
-.dropdown-button {
-  background-color: #3498db;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
-  border-radius: 5px;
-  transition: background 0.3s;
-}
 
-.dropdown-button:hover {
-  background-color: #2980b9;
-}
-.color {
-  margin-top: 10px;
-  padding: 15px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  background-color: #f9f9f9;
-}
 h1:hover {
   transform: translateY(-5px);
 }
@@ -111,7 +75,7 @@ h1:hover {
 h1:before {
   content: '⚡ ';
   font-size: 1.2rem;
-  color: #4caf50;
+  color: rgba(76, 175, 80, 0.8);
 }
 
 /* Style for the main content */
@@ -123,38 +87,47 @@ main {
 /* Game Grid layout */
 .game-grid {
   display: flex;
-  flex-wrap: wrap;  /* Allows wrapping to the next row when needed */
-  justify-content: center; /* Centers items horizontally */
-  gap: 20px; /* Space between game cards */
+  flex-wrap: wrap;
+  /* Allows wrapping to the next row when needed */
+  justify-content: center;
+  /* Centers items horizontally */
+  gap: 20px;
+  /* Space between game cards */
   padding: 20px;
 }
 
 /* Each game card */
 .game-card {
-  width: 200px; /* Fixed width to maintain uniform size */
-  flex: 1 1 auto; /* Allows cards to adjust within available space */
-  max-width: 250px; /* Prevents overly large cards on wide screens */
-  border: 2px solid #8e44ad;
+  width: 200px;
+  /* Fixed width to maintain uniform size */
+  flex: 1 1 auto;
+  /* Allows cards to adjust within available space */
+  max-width: 250px;
+  /* Prevents overly large cards on wide screens */
+  border: 2px solid rgba(142, 68, 173, 0.8);
   padding: 20px;
   border-radius: 8px;
-  background-color: #f9f9f9;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background-color: rgba(249, 249, 249, 0.95);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
   text-align: center;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
+
 .game-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.8);
 }
+
 .game-card h2 {
   font-size: 1.5rem;
   margin-bottom: 10px;
-  color: #4a90e2;
+  color: rgba(74, 144, 226, 0.9);
 }
+
 .game-card button {
   padding: 10px 20px;
   font-size: 1rem;
-  background-color: #4a90e2;
+  background-color: rgba(74, 144, 226, 0.6);
   color: white;
   border: none;
   border-radius: 4px;
@@ -163,26 +136,26 @@ main {
 }
 
 .game-card button:hover {
-  background-color: #45a049;
+  background-color: rgba(69, 160, 73, 0.6);
 }
 
 .blue {
-  background-color: #4a90e2;
+  background-color: rgba(74, 144, 226, 0.8);
 }
 
 .green {
-  background: #50c878;
+  background: rgba(80, 200, 120, 0.8);
 }
 
 .yellow {
-  background-color: #f7c948;
+  background-color: rgba(247, 201, 72, 0.8);
 }
 
 .red {
-  background-color: #e63946;
+  background-color: rgba(230, 57, 70, 0.8);
 }
 
 .purple {
-  background-color: #8e44ad;
+  background-color: rgba(142, 68, 173, 0.8);
 }
 </style>

@@ -73,30 +73,33 @@ export default {
 }
 
 header {
-  background: #2c3e50; /* Dark Blue-Gray */
+  background: #4a90e2; /* Dark Blue-Gray */
   color: white;
   padding: 20px;
   border-radius: 10px;
+  border: 2px solid #f7c948;
+
 }
 
 h1 {
   margin: 0;
   font-size: 26px;
-  color: #f1c40f; /* Gold */
+  color: #f7c948; /* Gold */
 }
 h2{
-  color: gold;
+  color: #f7c948;
 }
 .stats {
-  background: #34495e; /* Light Dark Blue-Gray */
+  background: #4a90e2; /* Light Dark Blue-Gray */
   padding: 25px;
   border-radius: 10px;
   margin-top: 20px;
   color: white;
+  border: 2px solid #f7c948;
 }
 
 .score-card {
-  background: #2c3e50; /* Dark Blue-Gray */
+  background: #0f73e5; /* Dark Blue-Gray */
   padding: 20px;
   border-radius: 10px;
   margin-bottom: 20px;

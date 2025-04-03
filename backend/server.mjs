@@ -6,7 +6,7 @@ import { createServer } from 'http'; // Import createServer
 import db from './Database/db.mjs';
 
 import leaderboardRoutes from './endpoints/leaderboards.mjs';
-import {initializeWebSocketServer, initializeKeyClash} from './endpoints/keyClash.mjs'; // Import WebSocket server
+import { initializeWebSocketServer, initializeKeyClash } from './endpoints/keyClash.mjs'; // Import WebSocket server
 import { initializeWordle } from './endpoints/alphaArena.mjs';
 
 const app = express();
@@ -74,6 +74,25 @@ app.post('/login', async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 });
+app.get('/getUsername/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await db.query(
+      `SELECT username FROM users WHERE id = $1`,
+      [id]
+    );
+
+    // If result is an array, access the first item directly
+    const username = result.length > 0 ? result[0].username : 'Player';
+
+    res.json({ username });
+  } catch (error) {
+    console.error("Error fetching username:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
 // Endpoint for fetching user information
 app.get('/userData/:username', async (req, res) => {
   const { username } = req.params;
@@ -178,9 +197,9 @@ app.get("/profile/equipped/:user_id", async (req, res) => {
 });
 
 //Equip a cosmetic
-app.post("/profile/equip", async (req,res) => {
-  const {userId, itemId, type} = req.body;
-  try{
+app.post("/profile/equip", async (req, res) => {
+  const { userId, itemId, type } = req.body;
+  try {
     //unequip previous item of the same type
     await db.none(`
       update user_items
@@ -189,7 +208,7 @@ app.post("/profile/equip", async (req,res) => {
       and item_id in (
       select id from items where type=$2
       )`
-    , [userId, type]);
+      , [userId, type]);
 
     //Equip the selected item
     await db.none(`
@@ -197,12 +216,12 @@ app.post("/profile/equip", async (req,res) => {
       set equipped = true
       where user_id=$1
       and item_id = $2`,
-    [userId, itemId]);
+      [userId, itemId]);
 
-    res.json({message: `${type} equipped successfully!`});
-  } catch(error){
+    res.json({ message: `${type} equipped successfully!` });
+  } catch (error) {
     console.error("Error equipping item:", error);
-    res.status(500).json({message: "Server error"});
+    res.status(500).json({ message: "Server error" });
   }
 })
 //Display cosmetics bought 
@@ -254,31 +273,31 @@ app.post("/achievements/:user_id", async (req, res) => {
   }
 });
 //Display Items from the store 
-app.get("/store/:user_id", async (req,res) => {
-  const {user_id} = req.params;
+app.get("/store/:user_id", async (req, res) => {
+  const { user_id } = req.params;
 
-  try{
+  try {
     const avilableItems = await db.any(
       `select * from items
       where id not in (select item_id from user_items where user_id=$1)`,
       [user_id]
     );
     res.json(avilableItems);
-  }catch(error){
+  } catch (error) {
     console.error("Error fetching store items:", error);
-    res.status(500).json({message: "Server Error"});
+    res.status(500).json({ message: "Server Error" });
   }
 });
 //Display Items from the store 
-app.get("/allstore", async (req,res) => {
-  try{
+app.get("/allstore", async (req, res) => {
+  try {
     const avilableItems = await db.any(
       `select * from items`
     );
     res.json(avilableItems);
-  }catch(error){
+  } catch (error) {
     console.error("Error fetching all store items:", error);
-    res.status(500).json({message: "Server Error"});
+    res.status(500).json({ message: "Server Error" });
   }
 });
 //When a user buys an item from the store

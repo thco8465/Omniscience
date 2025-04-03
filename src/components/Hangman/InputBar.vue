@@ -44,7 +44,7 @@
   }
   .space{
     min-width: 20px;
-    background: #8e44ad;
+    background: transparent; /* Purple with 60% opacity */    
   }
   </style>
   

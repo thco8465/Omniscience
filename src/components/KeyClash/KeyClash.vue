@@ -502,10 +502,10 @@
 
 /* Game area */
 .game-area {
-  position: relative;
-  height: 500px;
-  background-color: #111;
-  overflow: hidden;
+    position: relative;
+    height: 500px;
+    background-color: rgba(17, 17, 17, 0.7); /* Translucent background */
+    overflow: hidden;
 }
 
 .key-lanes {

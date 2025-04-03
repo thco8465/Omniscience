@@ -227,41 +227,33 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  /* height: 40vh; */
-  min-height: 40vh;
-  /* Optional: set a minimum height, but let it grow */
-  text-align: center;
+  min-height: 40vh; /* Optional: set a minimum height, but let it grow */
   text-align: center;
   margin-top: 50px;
   font-family: Arial, sans-serif;
-  text-align: center;
   margin: 20px auto;
-  background-color: #f7c948;
+  background-color: rgba(247, 201, 72, 0.8); /* Transparent yellow (#f7c948) with 80% opacity */
   padding: 20px;
   border-radius: 10px;
   max-width: 600px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
+
 /* Info Screen Styles */
 .info-screen {
-  position: fixed;
-  top: 145px;
-  left: 0;
-  width: 100%;
-  height: 80%;
-  background-color: rgba(255, 255, 255, 0.9);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 10;
-  transition: opacity 0.5s ease;
+    position: fixed;
+    top: 100px;
+    left: 0;
+    width: 100%;
+    height: 80%;
+    background-color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    transition: opacity 0.5s ease;
 }
-
 .info-content {
   text-align: center;
   max-width: 400px;
@@ -279,28 +271,28 @@ export default {
 
 .button-info {
   padding: 15px 30px;
-  background-color: #3498db;
+  background-color: rgba(52, 152, 219, 0.8); /* Transparent blue (#3498db) with 80% opacity */
   border: none;
   border-radius: 5px;
   color: white;
   font-size: 18px;
   cursor: pointer;
 }
-
 .button-info:hover {
-  background-color: #2980b9;
+  background-color: rgba(41, 128, 185, 0.8); /* Darker blue on hover */
 }
 
 .game-title {
-  color: #f7c948;
+  color: rgba(247, 201, 72, 0.8); /* Transparent yellow with 80% opacity */
   text-shadow: 1px 1px 1px black, -1px 0 3px #002823;
   font-family: 'Libre Baskerville', serif;
-  background-color: #8e44ad;
+  background-color: rgba(142, 68, 173, 0.8); /* Transparent purple (#8e44ad) with 80% opacity */
   border-radius: 15px;
   display: flex;
   justify-content: center;
   width: 500px;
 }
+
 
 .game-over {
   margin-top: 20px;
@@ -309,21 +301,20 @@ export default {
 
 .definitions {
   max-height: 200px;
-  /* Set a maximum height to limit the container */
   overflow-y: auto;
-  /* Enable vertical scrolling when the content overflows */
   margin-top: 20px;
   padding: 10px;
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border: 3px solid #8e44ad;
+  border: 3px solid rgba(142, 68, 173, 0.8); /* Transparent purple border */
   text-align: left;
 }
 
+
 button {
   padding: 10px;
-  background-color: #8e44ad;
-  color: #f7c948;
+  background-color: rgba(142, 68, 173, 0.8); /* Transparent purple (#8e44ad) with 80% opacity */
+  color: rgba(247, 201, 72, 0.8); /* Transparent yellow text with 80% opacity */
   border: none;
   cursor: pointer;
   font-size: 16px;
@@ -335,7 +326,7 @@ button {
 }
 
 button:hover {
-  background-color: #4a90e2;
+  background-color: rgba(74, 144, 226, 0.8); /* Transparent blue on hover (#4a90e2) */
 }
 
 .shake {

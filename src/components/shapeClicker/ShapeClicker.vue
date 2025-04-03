@@ -18,12 +18,14 @@
       <button @click="startGame">Start Again</button>
     </div>
     <div v-else class="timer">
-      <p>Level: {{ level }}</p>
-      <p>Time remaining: {{ timeRemaining }}s</p>
-      <div class="forbidden">
-        <p>Do NOT click: <strong>{{ forbiddenShape }}</strong></p>
-      </div>
-    </div>
+  <div class="level-time">
+    <p>Level: {{ level }}</p>
+    <p>Time remaining: {{ timeRemaining }}s</p>
+  </div>
+  <div>
+    <p>Do NOT click: <strong class="forbidden">{{ forbiddenShape }}</strong></p>
+  </div>
+</div>
     <div class="game-container">
       <div v-for="(shape, index) in shapes" :key="index" :class="['shape', shape.type, { clicked: shape.clicked }]"
         @click="handleShapeClick(index)" :style="{
@@ -206,31 +208,25 @@ export default {
   align-items: center;
   justify-content: center;
   text-align: center;
-  text-align: center;
-  margin-top: 50px;
   font-family: Arial, sans-serif;
-  text-align: center;
-  margin: 20px auto;
-  background-color: #e63946;
+  margin: 0px auto;
+  background-color: rgba(230, 57, 70, 0.8); /* Transparent red (#e63946) with 80% opacity */
   padding: 20px;
   border-radius: 10px;
   max-width: 600px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
   min-height: 80vh;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border: 2px solid rgba(247, 201, 72, 0.5); /* Transparent border */
 }
 
 /* Info Screen Styles */
 .info-screen {
   position: fixed;
-  top: 145px;
+  top: 100px;
   left: 0;
   width: 100%;
   height: 80%;
-  background-color: rgba(255, 255, 255, 0.9);
+  background-color: rgba(255, 255, 255, 0.8); /* Transparent white with 80% opacity */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -255,24 +251,24 @@ export default {
 
 .button-info {
   padding: 15px 30px;
-  background-color: #3498db;
+  background-color: rgba(52, 152, 219, 0.8); /* Transparent blue (#3498db) with 80% opacity */
   border: none;
   border-radius: 5px;
   color: white;
   font-size: 18px;
   cursor: pointer;
-  transition: background-color 1s ease
+  transition: background-color 1s ease;
 }
 
 .button-info:hover {
-  background-color: #2980b9;
+  background-color: rgba(41, 128, 185, 0.8); /* Darker blue on hover */
 }
 
 .game-title {
-  color: #f7c948;
+  color: rgba(247, 201, 72, 0.8); /* Transparent yellow (#f7c948) with 80% opacity */
   text-shadow: 2px 2px 2px black, -1px 0 3px #002823;
   font-family: 'Libre Baskerville', serif;
-  background-color: #8e44ad;
+  background-color: rgba(142, 68, 173, 0.8); /* Transparent purple (#8e44ad) with 80% opacity */
   border-radius: 15px;
   display: flex;
   justify-content: center;
@@ -283,13 +279,15 @@ export default {
   position: relative;
   width: 400px;
   height: 400px;
-  background-color: #f3f3f3;
-  border: 2px solid black;
-  margin-top: 20px;
+  background-color: rgba(243, 243, 243, 0.8); /* Transparent light gray (#f3f3f3) with 80% opacity */
+  border: 2px solid rgba(0, 0, 0, 0.8); /* Transparent black border */
+  margin-top: 0px;
   overflow: hidden;
+  border-radius: 10px;
 }
-.forbidden{
-  font-size: 25px;
+
+.forbidden {
+  font-size: 20px;
 }
 
 .shape {
@@ -324,13 +322,22 @@ export default {
 }
 
 .timer {
-  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 0px;
+}
+
+.level-time {
+  display: flex;
+  justify-content: center;
+  gap: 20px; /* Adds space between the level and time remaining */
 }
 
 button {
   padding: 10px;
-  background-color: #dfff00;
-  color: #8e44ad;
+  background-color: rgba(223, 255, 0, 0.8); /* Transparent yellow (#dfff00) with 80% opacity */
+  color: rgba(142, 68, 173, 0.8); /* Transparent purple (#8e44ad) with 80% opacity */
   border: none;
   cursor: pointer;
   font-size: 16px;
@@ -340,17 +347,18 @@ button {
 }
 
 button:hover {
-  background-color: rgb(160, 231, 160);
+  background-color: rgba(160, 231, 160, 0.8); /* Transparent greenish-yellow on hover */
 }
 
 .game-over {
   text-align: center;
-  margin-top: 20px;
+  margin: 10px;
   font-size: 24px;
   font-weight: bold;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.7); /* Transparent black with 70% opacity */
   color: white;
   padding: 20px;
   border-radius: 10px;
 }
+
 </style>

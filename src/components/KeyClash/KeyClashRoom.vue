@@ -6,7 +6,10 @@
             <div class="invite-section">
                 <input v-model="inviteUsername" class="invite-input" placeholder="Enter username to invite" />
                 <button @click="sendInvite" class="invite-btn">Send Invite</button>
-                <p v-if="inviteSent" class="invite-status">Invite sent to {{ inviteUsername }}</p>
+                <p v-if="inviteSent" class="invite-status">{{ message }}</p>
+                <div v-if="ErrMessage" class="invite-status">
+                    {{ ErrMessage }}
+                </div>
             </div>
 
             <div class="invites-section">
@@ -36,7 +39,7 @@
     </div>
 </template>
 <script setup>
-import { ref, onMounted, onUnmounted} from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { io } from 'socket.io-client';
 import { useStore } from "vuex";
 import { useRouter } from 'vue-router';
@@ -51,26 +54,39 @@ const inviteUsername = ref('');
 const inviteSent = ref(false);
 const invites_received = ref([])
 const invites_sent = ref([])
+const message = ref('')
+const ErrMessage = ref('')
 const username = store.state.user ? store.state.user.username : '';
 // Disable button after sending the invite
 const sendInvite = () => {
     if (!inviteUsername.value) {
-        alert("Please enter a username to invite.");
+        ErrMessage.value = "Please enter a username to invite."
+        setTimeout(() => {
+            message.value = ''
+        }, 5000)
         return;
     }
 
     if (!username) {
-        alert("You must be signed in.");
+        ErrMessage.value = "You must be signed in."
+        setTimeout(() => {
+            message.value = ''
+        }, 5000)
         return;
     }
 
     inviteSent.value = true;
-    console.log(inviteUsername.value, username)
+    message.value = `Invite sent to ${inviteUsername.value}`
     socket.emit("send_invite", {
         to: inviteUsername.value,
         from: username
     });
-    console.log('invite sent');
+    setTimeout(() => {
+        inviteSent.value = false;
+        message.value = ''
+
+    }, 5000)
+    //console.log('invite sent');
 };
 
 

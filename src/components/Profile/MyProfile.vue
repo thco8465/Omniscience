@@ -1,47 +1,47 @@
 <template>
   <div class="profile-page">
     <header class="profile-header">
-      <h1>{{ user ? user.username + "'s" : 'User' }} Profile</h1>
-      <div v-if="equippedAvatar" class="avatar-display">
-        <img :src="equippedAvatar" alt="Avatar" class="avatar" />
+      <div class="avatar-and-name">
+        <h1>{{ user ? user.username + "'s" : 'User' }} Profile</h1>
+        <div v-if="equippedAvatar" class="avatar-display">
+          <img :src="equippedAvatar" alt="Avatar" class="avatar" />
+        </div>
+      </div>
+      <div class="info-scores">
+        <section v-if="user" class="profile-info">
+          <h2>Profile Information</h2>
+          <p><strong>Username:</strong> {{ user.username }}</p>
+          <p><strong>Email:</strong> {{ user.email }}</p>
+        </section>
+        <section class="high-scores">
+          <h2>High Scores</h2>
+          <div class="score-item">
+            <span class="game-name">Hangman:</span>
+            <span class="score">{{ HangmanHigh }}</span>
+          </div>
+          <div class="score-item">
+            <span class="game-name">Alpha Arena:</span>
+            <span class="score">{{ AlphaArenaHigh }}</span>
+          </div>
+          <div class="score-item">
+            <span class="game-name">Terminology Twisters:</span>
+            <span class="score">{{ TerminologyTwistersHigh }}</span>
+          </div>
+          <div class="score-item">
+            <span class="game-name">Click-a-Palooza:</span>
+            <span class="score">{{ ClickaPaloozaHigh }}</span>
+          </div>
+          <div class="score-item">
+            <span class="game-name">Tiles of Terror:</span>
+            <span class="score">{{ TilesofTerrorHigh }}</span>
+          </div>
+          <div class="score-item">
+            <span class="game-name">Copy Cat:</span>
+            <span class="score">{{ CopyCatHigh }}</span>
+          </div>
+        </section>
       </div>
     </header>
-
-    <section v-if="user" class="profile-info">
-      <h2>Profile Information</h2>
-      <p><strong>Username:</strong> {{ user.username }}</p>
-      <p><strong>Email:</strong> {{ user.email }}</p>
-    </section>
-
-    <section class="high-scores">
-      <h2>High Scores</h2>
-      <div class="score-item">
-        <span class="game-name">Hangman:</span>
-        <span class="score">{{ HangmanHigh }}</span>
-      </div>
-      <div class="score-item">
-        <span class="game-name">Alpha Arena:</span>
-        <span class="score">{{ AlphaArenaHigh }}</span>
-      </div>
-      <div class="score-item">
-        <span class="game-name">Terminology Twisters:</span>
-        <span class="score">{{ TerminologyTwistersHigh }}</span>
-      </div>
-      <div class="score-item">
-        <span class="game-name">Click-a-Palooza:</span>
-        <span class="score">{{ ClickaPaloozaHigh }}</span>
-      </div>
-      <div class="score-item">
-        <span class="game-name">Tiles of Terror:</span>
-        <span class="score">{{ TilesofTerrorHigh }}</span>
-      </div>
-      <div class="score-item">
-        <span class="game-name">Copy Cat:</span>
-        <span class="score">{{ CopyCatHigh }}</span>
-      </div>
-    </section>
-
-
     <section v-if="user" class="cosmetics-section">
       <div class="cosmetics-header">
         <h2>Equip Your Cosmetics</h2>
@@ -100,7 +100,7 @@ import router from '@/router';
 
 export default {
   methods: {
-    background(){
+    background() {
       this.$router.push('/ScenicView')
     },
     getColorFromClass(styleClass) {
@@ -172,83 +172,83 @@ export default {
       }
     }
 
-      // Fetch cosmetics function
-      const fetchCosmetics = async (userId) => {
-        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-        try {
-          const types = ["background", "avatar", "card"];
-          const [fetchedBackgrounds, fetchedAvatars, fetchedCards] = await Promise.all(
-            types.map(type => axios.get(`${API_URL}/profile/${type}/${userId}`).then(res => res.data))
-          );
+    // Fetch cosmetics function
+    const fetchCosmetics = async (userId) => {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      try {
+        const types = ["background", "avatar", "card"];
+        const [fetchedBackgrounds, fetchedAvatars, fetchedCards] = await Promise.all(
+          types.map(type => axios.get(`${API_URL}/profile/${type}/${userId}`).then(res => res.data))
+        );
 
-          backgrounds.value = fetchedBackgrounds;
-          avatars.value = fetchedAvatars;
-          cards.value = fetchedCards;
+        backgrounds.value = fetchedBackgrounds;
+        avatars.value = fetchedAvatars;
+        cards.value = fetchedCards;
 
-          // Fetch equipped items
-          const equippedItems = await axios.get(`${API_URL}/profile/equipped/${userId}`);
-          console.log('Equipped items: ', equippedItems.data);
+        // Fetch equipped items
+        const equippedItems = await axios.get(`${API_URL}/profile/equipped/${userId}`);
+        console.log('Equipped items: ', equippedItems.data);
 
-          store.commit("setEquippedBackground", equippedItems.data.background || null);
-          store.commit("setEquippedAvatar", equippedItems.data.avatar || null);
-          store.commit("setEquippedCard", equippedItems.data.card || null);
-        } catch (error) {
-          console.error("Error fetching cosmetics:", error);
+        store.commit("setEquippedBackground", equippedItems.data.background || null);
+        store.commit("setEquippedAvatar", equippedItems.data.avatar || null);
+        store.commit("setEquippedCard", equippedItems.data.card || null);
+      } catch (error) {
+        console.error("Error fetching cosmetics:", error);
+      }
+    };
+
+    // Equip an item (background, avatar, or card)
+    const equipItem = async (item, type) => {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      try {
+        await axios.post(`${API_URL}/profile/equip`, {
+          userId: user.value.id,
+          itemId: item.id,
+          type
+        });
+
+        if (type === "background") {
+          store.commit("setEquippedBackground", item.image_url);
         }
-      };
-
-      // Equip an item (background, avatar, or card)
-      const equipItem = async (item, type) => {
-        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-        try {
-          await axios.post(`${API_URL}/profile/equip`, {
-            userId: user.value.id,
-            itemId: item.id,
-            type
-          });
-
-          if (type === "background") {
-            store.commit("setEquippedBackground", item.image_url);
-          }
-          if (type === "avatar") {
-            store.commit("setEquippedAvatar", item.image_url);
-          }
-          if (type === "card") {
-            store.commit("setEquippedCard", item.style_class);
-          }
-        } catch (error) {
-          console.error("Error equipping item:", error);
+        if (type === "avatar") {
+          store.commit("setEquippedAvatar", item.image_url);
         }
-      };
-
-      // Watch for changes in the equipped background and apply it immediately
-      watchEffect(() => {
-        if (equippedBackground.value) {
-          document.body.style.backgroundImage = `url('${equippedBackground.value}')`;
-          document.body.style.backgroundSize = 'cover';
-          document.body.style.backgroundPosition = 'center';
-          document.body.style.backgroundAttachment = 'fixed';
+        if (type === "card") {
+          store.commit("setEquippedCard", item.style_class);
         }
-      });
+      } catch (error) {
+        console.error("Error equipping item:", error);
+      }
+    };
 
-      onMounted(async () => {
-        user.value = store.state.user;
-        if (user.value) {
-          console.log("User detected in onMounted:", user.value);
+    // Watch for changes in the equipped background and apply it immediately
+    watchEffect(() => {
+      if (equippedBackground.value) {
+        document.body.style.backgroundImage = `url('${equippedBackground.value}')`;
+        document.body.style.backgroundSize = 'cover';
+        document.body.style.backgroundPosition = 'center';
+        document.body.style.backgroundAttachment = 'fixed';
+      }
+    });
 
-          await store.dispatch("fetchEquippedItems");
+    onMounted(async () => {
+      user.value = store.state.user;
+      if (user.value) {
+        console.log("User detected in onMounted:", user.value);
 
-          fetchCosmetics(user.value.id);
-          fetchHighScores(user.value.id);
-        }
-      });
+        await store.dispatch("fetchEquippedItems");
 
-      return {
-        user, backgrounds, avatars, cards, equippedBackground, equippedAvatar, equippedCard, equipItem,
-        HangmanHigh, AlphaArenaHigh, TerminologyTwistersHigh, ClickaPaloozaHigh, TilesofTerrorHigh, CopyCatHigh
-      };
-    }
-  };
+        fetchCosmetics(user.value.id);
+        fetchHighScores(user.value.id);
+      }
+    });
+
+    return {
+      user, backgrounds, avatars, cards, equippedBackground, equippedAvatar, equippedCard, equipItem,
+      HangmanHigh, AlphaArenaHigh, TerminologyTwistersHigh, ClickaPaloozaHigh, TilesofTerrorHigh, CopyCatHigh
+    };
+  }
+};
 </script>
 
 
@@ -257,33 +257,84 @@ export default {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Libre Baskerville', serif;
+
 }
 
 .profile-header {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
-  background-color: #34495e;
-  color: gold;
-  padding: 30px;
+  background-color: rgba(74, 144, 226, 0.8);
+  /* Translucent */
+  color: #f7c948;
+  padding: 20px;
   border-radius: 15px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border: 2px solid #f7c948;
+  margin-bottom: 40px;
+  
 }
 
 .profile-header h1 {
   font-size: 32px;
   font-weight: 600;
+  text-shadow: 2px 2px 2px #002823, -1px 0 3px #002823;
+}
+
+.avatar-and-name {
+  display: flex;
+  align-items: center;
+  text-align: center;
+}
+
+.avatar-display {
+  margin-top: 0px;
+}
+
+.avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #f7c948;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+.info-scores{
+  display: flex;
+}
+.profile-info {
+  background-color: rgba(74, 144, 226, 0.8);
+  /* Translucent */
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  border: 2px solid #f7c948;
+  margin: 30px;
+}
+
+.profile-info h2 {
+  font-size: 26px;
+  font-weight: 600;
+  color: gold;
+}
+
+.profile-info p {
+  font-size: 18px;
+  margin: 10px 0;
+  color: white;
 }
 
 .high-scores {
-  background-color: #f8f8f8;
+  background-color: rgba(248, 248, 248, 0.8);
+  /* Translucent */
   padding: 20px;
   border-radius: 10px;
   width: 300px;
-  margin: 20px auto;
+  margin: 0 auto;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   text-align: center;
+  border: 2px solid #f7c948;
 }
 
 .high-scores h2 {
@@ -317,33 +368,14 @@ export default {
   margin-left: 20px;
 }
 
-.avatar {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 4px solid #f39c12;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
 .profile-info {
   margin-top: 30px;
-  background-color: #34495e;
+  background-color: rgba(74, 144, 226, 0.8);
+  /* Translucent */
   padding: 20px;
   border-radius: 15px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-}
-
-.profile-info h2 {
-  font-size: 26px;
-  font-weight: 600;
-  color: gold;
-}
-
-.profile-info p {
-  font-size: 18px;
-  margin: 10px 0;
-  color: white;
+  border: 2px solid #f7c948;
 }
 
 .cosmetics-section {
@@ -351,7 +383,8 @@ export default {
 }
 
 .cosmetics-header h2 {
-  background: #34495e;
+  background: rgba(74, 144, 226, 0.8);
+  /* Translucent */
   border-radius: 5px;
   font-size: 28px;
   color: gold;
@@ -359,6 +392,7 @@ export default {
   text-align: center;
   margin-bottom: 30px;
   padding: 10px 10px;
+  border: 2px solid #f7c948;
 }
 
 .cosmetics-container {
@@ -366,13 +400,19 @@ export default {
   grid-template-columns: repeat(3, 1fr);
   gap: 30px;
   margin-top: 20px;
+  grid-auto-rows: auto;
+  align-items: flex-start;
 }
 
 .cosmetic-column {
-  background-color: #34495e;
+  background-color: rgba(74, 144, 226, 0.8);
+  /* Translucent */
   padding: 20px;
   border-radius: 15px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border: 2px solid #f7c948;
+  display: flex;
+  flex-direction: column;
 }
 
 .cosmetic-column h3 {
@@ -393,14 +433,23 @@ export default {
 .cosmetic-column li {
   margin-bottom: 20px;
   text-align: center;
+  position: relative;
+  padding: 20px;
+  background-color: rgba(255, 255, 255, 0.8);
+  /* Translucent */
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  /* Align items vertically, not centered */
-  position: relative;
-  padding: 20px;
-  /* Add some padding around the content */
+  justify-content: center;
+}
+
+.cosmetic-column li:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
 }
 
 .cosmetic-image {
@@ -408,8 +457,6 @@ export default {
   height: 120px;
   object-fit: cover;
   margin-bottom: 15px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   border-radius: 50%;
   object-fit: cover;
   border: 4px solid #f39c12;
@@ -422,8 +469,8 @@ export default {
   border-radius: 5px;
   margin: 10px 0;
   display: inline-block;
-  background-color: #f0f0f0;
-  /* Default background */
+  background-color: rgba(240, 240, 240, 0.8);
+  /* Translucent */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
@@ -436,7 +483,6 @@ button {
   border-radius: 5px;
   transition: background-color 0.3s ease;
   margin-top: 10px;
-  /* Add space above the button */
 }
 
 button:disabled {
@@ -445,7 +491,7 @@ button:disabled {
 }
 
 button:hover:not(:disabled) {
-  background-color: #2980b9;
+  background-color: green;
   transform: translateY(-2px);
 }
 

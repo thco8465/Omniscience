@@ -1,26 +1,14 @@
 <template>
-  <div class="wrapper">
+  <div class="sidebar">
     <header>
       <nav>
         <div class="nav-container">
-          <div class="nav-section">
-            <!-- <div class="nav-section dropdown">
-              <button class="dropbtn">Games</button>
-              <div class="dropdown-content">
-                <RouterLink to="/hangView">Hang Man</RouterLink>
-                <RouterLink to="/AlphaArena">Alpha Arena</RouterLink>
-                <RouterLink to="/Scramble">Terminology Twisters</RouterLink>
-                <RouterLink to="/ShapeClicker">Click-a-Palooza</RouterLink>
-                <RouterLink to="/Tiles">Tiles of Terror</RouterLink>
-                <RouterLink to="/Repeater">Copy Cat</RouterLink>
-              </div>
-            </div> -->
-            <!-- <RouterLink v-if="userId === -1" to="/CreateAccount">Create Account</RouterLink> -->
-          </div>
-          <div class="nav-section">
+          <div class="nav-section"></div>
+          <div class="nav-links">
             <RouterLink to="/">Home</RouterLink>
             <RouterLink v-if="userId !== -1" to="/Profile">Profile</RouterLink>
-            <RouterLink v-if="userId !== -1" to="/Achievements">Achievements</RouterLink>
+            <RouterLink v-if="userId !== -1" to="/Achievements">Medals</RouterLink>
+            <RouterLink v-if="userId !== -1" to="/MyStats">Performance</RouterLink>
             <RouterLink to="/Leaderboards">Leaderboards</RouterLink>
             <RouterLink to="/Store">Store</RouterLink>
             <RouterLink to="/AboutSite">About</RouterLink>
@@ -34,7 +22,6 @@
     </header>
   </div>
 </template>
-
 
 <script>
 import { computed } from 'vue';
@@ -61,120 +48,122 @@ export default {
   }
 };
 </script>
+
 <style scoped>
-header {
-  background-color: #8e44ad;
-  padding: 1rem 0;
-  border-radius: 5px;
-}
-
-nav {
+/* Sidebar (left menu) */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 60px; /* Collapsed width */
+  height: 100%;
+  background: linear-gradient(135deg, rgba(142, 68, 173, 0.85) 30%, rgba(94, 51, 112, 0.85) 70%);
+  padding-top: 10px;
+  border-radius: 0px 12px 12px 0px;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+  transition: width 0.3s ease;
+  overflow-x: hidden;
   display: flex;
-  justify-content: center; /* Center the nav items horizontally */
-  align-items: center;
-  width: 100%;
-  padding: 0 15px;
+  flex-direction: column;
+  justify-content: flex-start;
+  z-index: 9999;
 }
 
+/* Sidebar Expansion on Hover */
+.sidebar:hover {
+  width: 250px; /* Expanded width */
+  z-index: 9999;
+}
+
+header {
+  background: none; /* Remove background inside header */
+  padding: 1rem 0;
+}
+
+/* Navigation Container */
 .nav-container {
   display: flex;
-  justify-content: space-evenly; /* Space between the sections */
+  flex-direction: column;
+  align-items: center;
   width: 100%;
-  align-items: center;
+  height: 100%;
 }
 
-.nav-section {
+/* Navigation Links */
+.nav-links {
   display: flex;
-  gap: 20px;
-  justify-content: center; /* Centers the links inside the section */
-  align-items: center;
-  margin-right: 0px;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 20px;
 }
 
-nav a,
-.nav-section button,
-.dropbtn {
+nav a {
   color: #ecf0f1;
   text-decoration: none;
-  font-size: 1rem;
-  font-weight: 600;
-  padding: 10px 20px;
-  border-radius: 5px;
-  transition: background-color 0.3s ease, color 0.3s ease;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  font-family: 'Libre Baskerville', serif;
+  font-size: 1.1rem;
+  font-weight: bold;
+  padding: 12px 18px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(5px);
 }
 
 nav a:hover,
-.nav-section button:hover,
-.dropbtn:hover,
 nav a.router-link-exact-active {
-  background-color: #4a90e2;
+  background: #4a90e2;
   color: #f7c948;
-  transform: scale(1.1);
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(74, 144, 226, 0.3);
 }
 
-.dropdown {
-  position: relative;
-  top: -5px;
-  right: 10px;
-  display: inline-block;
-  z-index: 20;
-  font-family: 'Libre Baskerville', serif;
-}
-
-.dropdown-content {
-  display: none;
-  position: absolute;
-  background-color: #2c3e50;
-  min-width: 160px;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-  z-index: 1;
-}
-
-.dropdown-content a {
-  color: white;
-  padding: 10px 10px;
-  text-decoration: none;
-  display: block;
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.dropdown-content a:hover {
-  background-color: #3498db;
-}
-
-.dropdown:hover .dropdown-content {
-  display: block;
-}
-
+/* Logout Button */
 .logout-container {
-  margin-left: auto; /* Push the logout button to the right */
+  margin-top: auto; /* Push logout to the bottom */
+  padding: 10px;
 }
 
 .logout {
-  color: #ecf0f1;
-  text-decoration: none;
+  color: white;
   font-size: 1rem;
   font-weight: 600;
-  padding: 8px 15px;
-  border-radius: 5px;
-  transition: background-color 0.3s ease, color 0.3s ease;
-  background: transparent;
+  padding: 10px 18px;
+  border-radius: 8px;
   border: none;
   cursor: pointer;
-  font-family: 'Libre Baskerville', serif;
-  display: flex;
-  margin-left: auto; /* Aligns the logout button to the right */
-  margin-right: 40px;
+  transition: 0.3s;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(5px);
 }
 
 .logout:hover {
-  background-color: red;
+  background: red;
   color: gold;
   transform: scale(1.1);
+}
+
+/* Optional - Shine Effect */
+.sidebar::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 250%;
+  height: 100%;
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 100%);
+  transform: skewX(-20deg);
+  transition: 2s;
+  animation: subtleShine 8s infinite linear;
+  animation-delay: 4s;
+  pointer-events: none;
+}
+
+@keyframes subtleShine {
+  0% {
+    left: -150%;
+  }
+  100% {
+    left: 150%;
+  }
 }
 </style>

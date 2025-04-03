@@ -21,6 +21,15 @@
     </div>
   </div>
 
+  <div v-if="endStage" class="end-screen">
+    <div class="end-content">
+      <h2>Stage Over</h2>
+      <h2>Level {{level}} complete!</h2>
+      <h2>Complete in {{60 - timer}} seconds!</h2>
+      <button @click="startNewStage" class="button-info">Start Next Stage</button>
+    </div>
+  </div>
+
   <div class="game-board" v-if="!gameOver, start">
     <h1 class="game-title">Tiles of Terror</h1>
     <div class="timer-container">
@@ -60,7 +69,8 @@ export default {
       medal: null,
       isActive: true,
       start: false,
-      gameOver: false, // New property to track game over state
+      gameOver: false, // New property to track game over state,
+      endStage: false,
     };
   },
 
@@ -82,6 +92,7 @@ export default {
       this.gameOver = false;
       this.cards = [];
       this.flippedCards = [];
+      this.endStage = false
 
       // Reset the game board layout
       const cardsContainer = document.querySelector('.cards-container');
@@ -153,10 +164,16 @@ export default {
 
       if (this.allCardsMatched()) {
         clearInterval(this.intervalId);
-        alert(`Congratulations, level ${this.level} complete in ${60 - this.timer} seconds!`);
-        this.level++;
-        this.startNewLevel();
+        //alert(`Congratulations, level ${this.level} complete in ${60 - this.timer} seconds!`);
+        this.endStage = true
+        // this.level++;
+        // this.startNewLevel();
       }
+    },
+    startNewStage(){
+      this.endStage = false
+      this.level++;
+      this.startNewLevel();
     },
     allCardsMatched() {
       return this.cards.every((card) => card.matched);
@@ -267,8 +284,7 @@ export default {
   color: #f7c948;
   text-shadow: 1px 1px 1px black, -1px 0 3px #002823;
   font-family: 'Libre Baskerville', serif;
-  background-color: #8e44ad;
-  border-radius: 15px;
+  background-color: rgba(142, 68, 173, .5); /* Transparent background */  border-radius: 15px;
   display: flex;
   justify-content: center;
   width: 100%;
@@ -292,8 +308,7 @@ export default {
   width: 100%;
   max-width: 700px;
   margin: 0 auto;
-  background-color: #4a90e2;
-  border-radius: 10px;
+  background-color: rgba(74, 144, 226, .5); /* Fully transparent background */  border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   position: relative;
   overflow: visible;
@@ -302,18 +317,19 @@ export default {
 
 /* Info Screen Styles */
 .info-screen {
-  position: fixed;
-  top: 145px;
-  left: 0;
-  width: 100%;
-  height: 80%;
-  background-color: rgba(255, 255, 255, 0.9);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 10;
-  transition: opacity 0.5s ease;
+    position: fixed;
+    top: 100px;
+    left: 0;
+    width: 100%;
+    height: 80%;
+    background-color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    transition: opacity 0.5s ease;
 }
+
 
 .info-content {
   text-align: center;
@@ -371,8 +387,7 @@ export default {
   justify-items: center;
   width: 100%;
   margin-top: 10px;
-  background-color: #ddd;
-  /* Light gray background to differentiate cards */
+  background-color: rgba(221, 221, 221, .5); /* Fully transparent background */  /* Light gray background to differentiate cards */
   padding: 20px;
   border-radius: 10px;
   box-sizing: border-box;

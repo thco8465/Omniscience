@@ -358,7 +358,7 @@ export default {
   font-family: Arial, sans-serif;
   text-align: center;
   margin: 20px auto;
-  background-color: #f4f4f4;
+  background-color: rgba(142, 68, 173, 0.95); /* Purple with 60% opacity */    
   padding: 20px;
   border-radius: 10px;
   max-width: 600px;
@@ -372,17 +372,17 @@ export default {
 
 /* Info Screen Styles */
 .info-screen {
-  position: fixed;
-  top: 145px;
-  left: 0;
-  width: 100%;
-  height: 80%;
-  background-color: rgba(255, 255, 255, 0.9);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 10;
-  transition: opacity 0.5s ease;
+    position: fixed;
+    top: 100px;
+    left: 0;
+    width: 100%;
+    height: 80%;
+    background-color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    transition: opacity 0.5s ease;
 }
 
 h2 {

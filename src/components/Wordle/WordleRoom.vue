@@ -173,18 +173,18 @@ onUnmounted(() => {
     flex-direction: column;
     height: auto;
     /* Allows the container to grow based on the content */
-    min-height: 00vh;
+    min-height: 0vh;
     /* Ensures the container takes at least the full height of the screen */
     padding: 0px 0px;
-    background-color: #f0f4f8;
-    font-family: 'Arial', sans-serif;
+    background-color: rgba(240, 244, 248, 0.8); /* Light background with 80% opacity */    font-family: 'Arial', sans-serif;
     color: #333;
+    max-width: 800px
 }
 
 .game-header {
-    background-color: #ff7b54;
-    border-radius: 10px;
+    background-color: rgba(255, 123, 84, 0.8); /* Light orange with 80% opacity */    border-radius: 10px;
     padding: 20px 20px;
+    border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     text-align: center;
     width: 80%;
@@ -207,15 +207,15 @@ onUnmounted(() => {
     padding: 10px;
     width: 60%;
     font-size: 1.1rem;
-    border: 2px solid #ff7b54;
+    border: 2px solid rgba(255, 123, 84, 0.8); /* Border with translucent orange */
     border-radius: 5px;
     outline: none;
     margin-right: 10px;
 }
 
+
 .clear-btn {
-    background-color: #ff4d4d;
-    /* Red color for delete button */
+    background-color: rgba(255, 77, 77, 0.8); /* Transparent red for delete button */
     color: white;
     border: none;
     border-radius: 5px;
@@ -230,7 +230,7 @@ onUnmounted(() => {
 
 .invite-btn {
     padding: 10px 20px;
-    background-color: #ff7b54;
+    background-color: rgba(255, 123, 84, 0.8); /* Transparent orange for invite button */
     border: none;
     border-radius: 5px;
     color: white;
@@ -239,13 +239,14 @@ onUnmounted(() => {
     transition: background-color 0.3s;
 }
 
+
 .invite-btn:disabled {
-    background-color: #ddd;
+    background-color: rgba(221, 221, 221, 0.8); /* Light gray for disabled button */
     cursor: not-allowed;
 }
 
 .invite-btn:hover {
-    background-color: #ff5a2e;
+    background-color: rgba(255, 90, 46, 0.8); /* Darker orange on hover */
 }
 
 .invite-status {
@@ -267,7 +268,7 @@ h2 {
 }
 
 .invite-item {
-    background-color: #fff;
+    background-color: rgba(255, 255, 255, 0.8); /* White with 80% opacity */
     padding: 15px;
     margin: 10px 0;
     border-radius: 8px;
@@ -293,21 +294,21 @@ h2 {
 }
 
 .accept-btn {
-    background-color: #4caf50;
+    background-color: rgba(76, 175, 80, 0.8); /* Transparent green for accept button */
     color: white;
 }
 
 .decline-btn {
-    background-color: #f44336;
+    background-color: rgba(244, 67, 54, 0.8); /* Transparent red for decline button */
     color: white;
 }
 
 .accept-btn:hover {
-    background-color: #45a049;
+    background-color: rgba(69, 160, 73, 0.8); /* Darker green on hover */
 }
 
 .decline-btn:hover {
-    background-color: #d32f2f;
+    background-color: rgba(211, 47, 47, 0.8); /* Darker red on hover */
 }
 
 .invites_received ul,

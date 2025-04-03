@@ -12,6 +12,9 @@
             </div>
             <button @click="redirectToConverter">Convert Currency</button>
         </div>
+        <div v-if="message" class="msg">
+            {{ message }}
+        </div>
         <div class="items-container">
             <div class="background-column">
                 <h3>Backgrounds</h3>
@@ -25,9 +28,9 @@
                         <span class="currency-price">Bronze: {{ item.price_bronze }}</span>
                     </p>
                     <button
-                        :style="{ backgroundColor: (gold > item.price_gold || silver > item.price_silver || bronze > item.price_bronze) ? 'green' : 'gray' }"
-                        :disabled="!(gold > item.price_gold || silver > item.price_silver || bronze > item.price_bronze)"
-                        @click="buyItem(item.id, item.name)">
+                        :class="{ 'buy-button': true, 'disabled': !(gold > item.price_gold || silver > item.price_silver || bronze > item.price_bronze) }"
+                        @click="buyItem(item.id, item.name)"
+                        :disabled="!(gold > item.price_gold || silver > item.price_silver || bronze > item.price_bronze)">
                         Buy
                     </button>
                 </div>
@@ -45,9 +48,9 @@
                         <span class="currency-price">Bronze {{ item.price_bronze }}</span>
                     </p>
                     <button
-                        :style="{ backgroundColor: (gold > item.price_gold || silver > item.price_silver || bronze > item.price_bronze) ? 'green' : 'gray' }"
-                        :disabled="!(gold > item.price_gold || silver > item.price_silver || bronze > item.price_bronze)"
-                        @click="buyItem(item.id, item.name)">
+                        :class="{ 'buy-button': true, 'disabled': !(gold > item.price_gold || silver > item.price_silver || bronze > item.price_bronze) }"
+                        @click="buyItem(item.id, item.name)"
+                        :disabled="!(gold > item.price_gold || silver > item.price_silver || bronze > item.price_bronze)">
                         Buy
                     </button>
                 </div>
@@ -66,9 +69,9 @@
                         <span class="currency-price">Bronze {{ item.price_bronze }}</span>
                     </p>
                     <button
-                        :style="{ backgroundColor: (gold > item.price_gold || silver > item.price_silver || bronze > item.price_bronze) ? 'green' : 'gray' }"
-                        :disabled="!(gold > item.price_gold || silver > item.price_silver || bronze > item.price_bronze)"
-                        @click="buyItem(item.id, item.name)">
+                        :class="{ 'buy-button': true, 'disabled': !(gold > item.price_gold || silver > item.price_silver || bronze > item.price_bronze) }"
+                        @click="buyItem(item.id, item.name)"
+                        :disabled="!(gold > item.price_gold || silver > item.price_silver || bronze > item.price_bronze)">
                         Buy
                     </button>
                 </div>
@@ -92,11 +95,12 @@ export default {
             backgrounds: [],
             avatars: [],
             cards: [],
+            message: '',
         }
     },
     methods: {
-        redirectToConverter(){
-            this.$router.push({name: 'ConvertCurr'})
+        redirectToConverter() {
+            this.$router.push({ name: 'ConvertCurr' })
         },
         async fetchAchievements() {
             const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -136,13 +140,15 @@ export default {
             const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
             try {
                 await axios.post(`${API_URL}/store/${this.user_id}`, { item_id });
-
-                alert(`You have successfully purchased the ${item_name}`);
+                this.message = `You have successfully purchased ${item_name}. Equip in Profile`
+                setTimeout(() => {
+                    this.message = '';  // Clear the message after 5 seconds
+                }, 5000);  // 5000 milliseconds = 5 seconds
                 this.fetchAchievements();
                 this.fetchStoreItems();
             } catch (error) {
                 console.error("Error purchasing item:", error);
-                alert("There was an issue with your purchase")
+                this.message = "There was an issue with your purchase"
             }
         },
         async equipCard(cardStyle) {
@@ -187,9 +193,9 @@ export default {
     mounted() {
         // Fetch initial currency values 
         this.fetchAchievements();
-        if(this.user_id){
+        if (this.user_id) {
             this.fetchStoreItems();
-        }else{
+        } else {
             this.fetchAllItems();
         }
     }
@@ -221,27 +227,54 @@ export default {
 
 .store-header h1 {
     font-size: 36px;
-    color: #f1c40f;
+    color: #f7c948;
     /* Gold */
     font-weight: bold;
-    background-color: #2c3e50;
+    background-color: rgba(74, 144, 226, 0.8);
     /* Dark Blue-Gray */
     border-radius: 5px;
+    border: 2px solid #f7c948;
 }
 
 .currency {
-    background-color: #2c3e50;
+    background-color: rgba(74, 144, 226, 0.8);
     /* Dark Blue-Gray */
     padding: 15px;
     border-radius: 8px;
     text-align: center;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     margin-bottom: 40px;
+    border: 2px solid #f7c948;
+
 }
+
+.msg {
+  border: 1px solid #ddd;
+  padding: 15px;
+  background-color: #fff;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100px;
+
+  /* Ensure the message is fixed on screen */
+  position: fixed;
+  top: 20px;  /* You can adjust this value to position it vertically where you want */
+  left: 50%;
+  transform: translateX(-50%);  /* Center the message horizontally */
+  z-index: 9999;  /* Ensure it's in front of other content */
+}
+
 
 .currency h2 {
     font-size: 28px;
-    color: gold;
+    color: #f7c948;
     /* Light Grayish Blue */
     margin-bottom: 10px;
 }
@@ -269,23 +302,23 @@ export default {
 .avatar-column,
 .cards-column {
     padding: 20px;
-    background-color: #2c3e50;
+    background-color: rgba(74, 144, 226, 0.8);
     /* Dark Blue-Gray */
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-    color: #f1c40f;
+    color: #f7c948;
     /* Gold */
     justify-content: center;
     align-items: center;
-
+    border: 2px solid
 }
 
 .item-column h3 {
     font-size: 24px;
     text-align: center;
-    color: #f1c40f;
+    color: #f7c948;
     /* Gold */
     margin-bottom: 20px;
 }
@@ -303,6 +336,7 @@ export default {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+
 }
 
 .item:hover {
@@ -342,7 +376,7 @@ button {
     padding: 10px 20px;
     font-size: 16px;
     color: white;
-    background-color: #27ae60;
+    background-color: #50c878;
     /* Teal */
     border: none;
     border-radius: 5px;
@@ -352,7 +386,7 @@ button {
 }
 
 button:hover {
-    background-color: #2ecc71;
+    background-color: #1ca454;
     /* Lighter Teal */
 }
 
@@ -360,5 +394,33 @@ button:disabled {
     background-color: #bdc3c7;
     /* Silver Gray */
     cursor: not-allowed;
+}
+
+.buy-button {
+    background-color: #50c878;
+    /* Emerald Green */
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    font-size: 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.buy-button:hover {
+    background-color: #3ca769;
+    /* Darker green on hover */
+}
+
+.buy-button:active {
+    background-color: #2e8b57;
+    /* Even darker when clicked */
+}
+
+.buy-button.disabled {
+    background-color: gray;
+    cursor: not-allowed;
+    opacity: 0.6;
 }
 </style>

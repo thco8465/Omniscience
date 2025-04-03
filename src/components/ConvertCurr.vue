@@ -7,37 +7,44 @@
                 <h1>Silver: {{ currS }} 🥈</h1>
                 <h1>Bronze: {{ currB }} 🥉</h1>
             </div>
-            <div class="GtoS">
-                <h2>
-                    Gold : Silver -> 1 : 2
-                </h2>
-                <h2>{{ GtoS }} : {{ GtoS * 2 }}</h2>
-                <div class="btns">
-                    <button @click="decreaseGtoS" :disabled="this.GtoS <= 0">-</button>
-                    <button @click="increaseGtoS" :disabled="this.GtoS >= this.currG">+</button>
-                    <button @click="convertGtoS" :disabled="this.GtoS <= 0">Convert</button>
+            <div class="currencies">
+                <div class="GtoS">
+                    <h2>
+                        Gold to Silver
+                    </h2>
+                    <h2>1 : 2</h2>
+                    <h2>{{ GtoS }} : {{ GtoS * 2 }}</h2>
+                    <div class="btns">
+                        <button @click="decreaseGtoS" :disabled="this.GtoS <= 0">-</button>
+                        <button @click="increaseGtoS" :disabled="this.GtoS >= this.currG">+</button>
+                        <button @click="convertGtoS" :disabled="this.GtoS <= 0">Convert</button>
+                    </div>
                 </div>
-            </div>
-            <div class="GtoB">
-                <h2>
-                    Gold : Bronze -> 1 : 3
-                </h2>
-                <h2>{{ GtoB }} : {{ GtoB * 3 }}</h2>
-                <div class="btns">
-                    <button @click="decreaseGtoB" :disabled="this.GtoB <= 0">-</button>
-                    <button @click="increaseGtoB" :disabled="this.GtoB >= this.currG">+</button>
-                    <button @click="convertGtoB" :disabled="this.GtoB <= 0">Convert</button>
+                <div class="GtoB">
+                    <h2>
+                        Gold to Bronze
+                    </h2>
+                    <h2>
+                        1 : 3
+                    </h2>
+                    <h2>{{ GtoB }} : {{ GtoB * 3 }}</h2>
+                    <div class="btns">
+                        <button @click="decreaseGtoB" :disabled="this.GtoB <= 0">-</button>
+                        <button @click="increaseGtoB" :disabled="this.GtoB >= this.currG">+</button>
+                        <button @click="convertGtoB" :disabled="this.GtoB <= 0">Convert</button>
+                    </div>
                 </div>
-            </div>
-            <div class="StoB">
-                <h2>
-                    Silver : Bronze -> 1 : 2
-                </h2>
-                <h2>{{ StoB }} : {{ StoB * 2 }}</h2>
-                <div class="btns">
-                    <button @click="decreaseStoB" :disabled="this.StoB <= 0">-</button>
-                    <button @click="increaseStoB" :disabled="this.StoB >= this.currS">+</button>
-                    <button @click="convertStoB" :disabled="this.StoB <= 0">Convert</button>
+                <div class="StoB">
+                    <h2>
+                        Silver : Bronze
+                    </h2>
+                    <h2>1 : 2</h2>
+                    <h2>{{ StoB }} : {{ StoB * 2 }}</h2>
+                    <div class="btns">
+                        <button @click="decreaseStoB" :disabled="this.StoB <= 0">-</button>
+                        <button @click="increaseStoB" :disabled="this.StoB >= this.currS">+</button>
+                        <button @click="convertStoB" :disabled="this.StoB <= 0">Convert</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -145,14 +152,18 @@ export default {
 </script>
 <style scoped>
 .container {
-    background-color: #2c3e50;
+    background-color: rgba(36, 127, 66, 0.8);
     color: white;
     border-radius: 5px;
     justify-content: center;
     align-items: center;
     text-align: center;
+    max-width: 800px;
+    border: 2px solid gold;
 }
-
+.currencies{
+    display: flex;
+}
 .GtoS {
     background: linear-gradient(145deg, #d9d9d9, #bfbfbf, #f5f5f5);
     border-radius: 5px;

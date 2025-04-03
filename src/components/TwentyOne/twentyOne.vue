@@ -82,9 +82,9 @@
 
             </div>
             <h2 v-if="gameState === 'gameover'" :class="resultClass">{{ resultMessage }}</h2>
-            <div v-if="gameState === 'gameover' && userId !== -1" class="bet-result">
+            <div v-if="gameState === 'gameover' && userId !== -1 && getBetTotal() > 0" class="bet-result">
                 <div v-if="betWon" class="winnings">
-                    <h3>You won:</h3>
+                    <h3>You won: </h3>
                     <div class="medals-display">
                         <div v-if="currentBet.bronze > 0" class="medal-count">
                             <span>+{{ currentBet.bronze }}</span>
@@ -98,7 +98,7 @@
                     </div>
                 </div>
                 <div v-else class="losses">
-                    <h3>You lost:</h3>
+                    <h3>You lost: </h3>
                     <div class="medals-display">
                         <div v-if="currentBet.bronze > 0" class="medal-count">
                             <span>-{{ currentBet.bronze }}</span>
@@ -171,6 +171,9 @@ export default {
     methods: {
         redirectToLogin(){
             this.$router.push({name: 'Login'})
+        },
+        getBetTotal() {
+            return this.currentBet.bronze + this.currentBet.silver + this.currentBet.gold;
         },
         async fetchUserAchievements() {
             if (this.userId === -1) {
@@ -402,9 +405,10 @@ export default {
 .game-container {
     text-align: center;
     max-width: 800px;
+    min-width: 400px;
     margin: 0 auto;
     padding: 20px;
-    background-color: #f5f5f5;
+    background-color: rgba(245, 245, 245, .8); /* Light gray */
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
@@ -421,14 +425,16 @@ export default {
     min-height: 140px;
     margin: 15px 0;
 }
+
 .login-prompt{
     
 }
+
 .card {
     width: 100px;
     height: auto;
     transition: transform 0.3s ease-in-out;
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
     border-radius: 5px;
 }
 
@@ -443,8 +449,8 @@ export default {
 button {
     padding: 10px 20px;
     margin: 0 5px;
-    background-color: #4CAF50;
-    color: white;
+    background-color: rgba(76, 175, 80, .5); /* Green */
+    color: rgba(255, 255, 255, 1); /* White */
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -453,11 +459,11 @@ button {
 }
 
 button:hover:not(:disabled) {
-    background-color: #45a049;
+    background-color: rgba(69, 160, 73, .5); /* Darker green */
 }
 
 button:disabled {
-    background-color: #cccccc;
+    background-color: rgba(204, 204, 204, .5); /* Gray */
     cursor: not-allowed;
 }
 
@@ -474,11 +480,11 @@ button:disabled {
 
 /* Betting Panel Styles */
 .betting-panel {
-    background-color: #fff;
+    background-color: rgba(255, 255, 255, .7); /* White */
     border-radius: 8px;
     padding: 20px;
     margin-bottom: 20px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .medals-display {
@@ -537,36 +543,37 @@ button:disabled {
 }
 
 .deal-button {
-    background-color: #2196F3;
+    background-color: rgba(33, 150, 243, 1); /* Blue */
     padding: 12px 24px;
     font-size: 18px;
     margin-top: 15px;
 }
 
 .deal-button:hover:not(:disabled) {
-    background-color: #0b7dda;
+    background-color: rgba(11, 125, 218, 1); /* Darker blue */
 }
 
 .bet-result {
     margin: 20px 0;
     padding: 15px;
     border-radius: 8px;
-    background-color: #f8f8f8;
+    background-color: rgba(248, 248, 248, 1); /* Light gray */
 }
 
 .winnings {
-    color: #4CAF50;
+    color: rgba(76, 175, 80, 1); /* Green */
 }
 
 .losses {
-    color: #f44336;
+    color: rgba(244, 67, 54, 1); /* Red */
 }
 
 .win-message {
-    color: #4CAF50;
+    color: rgba(76, 175, 80, 1); /* Green */
 }
 
 .lose-message {
-    color: #f44336;
+    color: rgba(244, 67, 54, 1); /* Red */
 }
+
 </style>

@@ -38,7 +38,7 @@ export default {
     color: #f7c948;
     text-shadow: 1px 1px 1px black, -1px 0 3px #002823;
     font-family: 'Libre Baskerville', serif;
-    background-color: #8E44AD;
+    background-color: rgba(142, 68, 173, 0.6); /* Purple with 60% opacity */  
     border-radius: 15px;
     display: flex;
     justify-content: center;

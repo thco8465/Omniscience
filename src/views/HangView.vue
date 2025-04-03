@@ -221,7 +221,7 @@ export default {
     font-family: Arial, sans-serif;
     text-align: center;
     margin: 20px auto;
-    background-color: #8E44AD;
+    background-color: rgba(142, 68, 173, 0.6); /* Purple with 60% opacity */    
     padding: 20px;
     border-radius: 10px;
     max-width: 10000px;
@@ -236,7 +236,7 @@ export default {
 /* Info Screen Styles */
 .info-screen {
     position: fixed;
-    top: 145px;
+    top: 100px;
     left: 0;
     width: 100%;
     height: 80%;

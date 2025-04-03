@@ -212,17 +212,17 @@ export default {
 <style scoped>
 /* Info Screen Styles */
 .info-screen {
-  position: fixed;
-  top: 145px;
-  left: 0;
-  width: 100%;
-  height: 80%;
-  background-color: rgba(255, 255, 255, 0.9);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 10;
-  transition: opacity 0.5s ease;
+    position: fixed;
+    top: 100px;
+    left: 0;
+    width: 100%;
+    height: 80%;
+    background-color: rgba(255, 255, 255, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    transition: opacity 0.5s ease;
 }
 
 .info-content {
@@ -260,7 +260,7 @@ export default {
   font-family: Arial, sans-serif;
   text-align: center;
   margin: 20px auto;
-  background-color: #f4f4f4;
+  background-color: rgba(244, 244, 244, 0.7); /* Translucent light gray background */
   padding: 20px;
   border-radius: 10px;
   max-width: 600px;

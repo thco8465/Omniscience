@@ -88,15 +88,17 @@ export default {
     flex-direction: column;
     gap: 2rem;
     padding: 20px;
-    background-color: #34495e;
+    background-color: #4a90e2;
     border-radius: 12px;
     max-width: 1200px;
     margin: 20px auto;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    border: 2px solid #f7c948;
+    
 }
 
 .leaderboard>div {
-    background-color: #2c3e50;
+    background-color: #0d6edd;
     border-radius: 10px;
     padding: 20px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -110,14 +112,15 @@ export default {
 }
 
 .game-leaderboard {
-    background-color: #34495e;
+    background-color: #4a90e2;
     border-radius: 5px;
     padding: 5px 10px;
+    border: 2px solid #f7c948;
 }
 
 .leaderboard h1 {
     font-size: 1.8rem;
-    color: gold;
+    color: #f7c948;
     margin-bottom: 1rem;
     text-transform: uppercase;
     font-weight: 600;
@@ -141,7 +144,7 @@ ul li {
 }
 
 ul li:hover {
-    background-color: #455e76;
+    background-color: #186fd3;
 }
 
 ul li .avatar-image {
@@ -170,19 +173,20 @@ ul li .user-info {
 ul li .rank {
     font-weight: bold;
     margin-right: 10px;
-    color: white;
+    color: black;
 }
 
 ul li .username {
     font-size: 16px;
     font-weight: bold;
     margin-right: 15px;
-    color: white;
+    color: black;
 }
 
 ul li .score {
     font-size: 14px;
-    color: gold;
+    color: black;
+    font-weight: bold;
     margin-right: 15px;
 }
 
@@ -193,7 +197,7 @@ ul li .date {
 
 ul li .you {
     font-size: 1rem;
-    color: #28a745;
+    color: #010e04;
     font-weight: bold;
     margin-left: 10px;
 }

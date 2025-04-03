@@ -33,6 +33,7 @@ onMounted(() => {
 .container{
   border-radius: 5px;
   width: 100%;
+  font-family: 'Libre Baskerville', serif;
 }
 .avatar-container {
   width: 50px;
@@ -40,7 +41,7 @@ onMounted(() => {
   border-radius: 50%;
   overflow: hidden;
   margin-left: 10px;
-  border: 3px solid gold;
+  border: 3px solid #f7c948;
 }
 
 .avatar {
@@ -62,14 +63,14 @@ onMounted(() => {
   font-family: 'Libre Baskerville', serif;
 }
 .main-menu{
-  padding: 5px;
+  padding: 0px;
 }
 .route {
-  margin-top: 5px;
+  margin-top: 0px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10px
+  padding: 0px
 }
 
 header {
