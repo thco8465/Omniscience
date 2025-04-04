@@ -94,6 +94,7 @@ main {
   gap: 20px;
   /* Space between game cards */
   padding: 20px;
+  padding-left: 80px;
 }
 
 /* Each game card */
