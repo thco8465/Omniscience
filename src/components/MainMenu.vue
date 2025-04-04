@@ -36,13 +36,23 @@ export default {
     const userId = computed(() => store.state.user?.id || -1);
 
     const logout = () => {
-      document.body.style.backgroundImage = '';
-      document.body.style.backgroundSize = '';
-      document.body.style.backgroundPosition = '';
+      console.log("Logging out...");
+
+      // Clear user-related Vuex state
       store.commit("setEquippedAvatar", null);
-      store.commit('setUser', { id: null, username: '', email: '' });
+      store.commit("setEquippedBackground", "images/oceanSunset.jpg"); // Set default background
+      store.commit("setUser", null); // Clear user session
+
+      // Immediately update the DOM background
+      document.body.style.backgroundImage = `url('/images/cloudyCastle.jpg')`;
+      document.body.style.backgroundSize = "cover";
+      document.body.style.backgroundPosition = "center";
+      document.body.style.backgroundAttachment = "fixed";
+
+      // Redirect to login page
       router.push('/Login');
     };
+
 
     return { userId, logout };
   }
@@ -55,7 +65,8 @@ export default {
   position: fixed;
   top: 0;
   left: 0;
-  width: 60px; /* Collapsed width */
+  width: 60px;
+  /* Collapsed width */
   height: 100%;
   background: linear-gradient(135deg, rgba(142, 68, 173, 0.85) 30%, rgba(94, 51, 112, 0.85) 70%);
   padding-top: 10px;
@@ -71,12 +82,14 @@ export default {
 
 /* Sidebar Expansion on Hover */
 .sidebar:hover {
-  width: 250px; /* Expanded width */
+  width: 250px;
+  /* Expanded width */
   z-index: 9999;
 }
 
 header {
-  background: none; /* Remove background inside header */
+  background: none;
+  /* Remove background inside header */
   padding: 1rem 0;
 }
 
@@ -119,7 +132,8 @@ nav a.router-link-exact-active {
 
 /* Logout Button */
 .logout-container {
-  margin-top: auto; /* Push logout to the bottom */
+  margin-top: auto;
+  /* Push logout to the bottom */
   padding: 10px;
 }
 
@@ -162,6 +176,7 @@ nav a.router-link-exact-active {
   0% {
     left: -150%;
   }
+
   100% {
     left: 150%;
   }

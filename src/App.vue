@@ -20,7 +20,7 @@ onMounted(() => {
     console.log("User not logged in, using default background.");
     if (!store.state.equippedBackground) {
       // Set default background for logged-out users
-      store.commit("setEquippedBackground", "/images/cloudyCastle.jpg");
+      store.commit("setEquippedBackground", "images/oceanSunset.jpg");
     }
   } else {
     // For logged-in users, fetch equipped items from the backend
