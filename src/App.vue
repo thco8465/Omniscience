@@ -1,15 +1,42 @@
 <script setup>
 import { RouterView } from 'vue-router'
 import MainMenu from './components/MainMenu.vue'
-import { computed, onMounted } from 'vue';
+import { computed, watch, onMounted } from 'vue';
 import { useStore } from 'vuex';
 
 const store = useStore();
 const equippedAvatar = computed(() => store.state.equippedAvatar);
+const equippedBackground = computed(() => store.state.equippedBackground)
 
-// Ensure the avatar loads when the app is initialized
+// Check if the user is logged in
+const userLoggedIn = computed(() => store.state.user !== null);
+
+// Set default background if not logged in
 onMounted(() => {
-  store.dispatch("fetchEquippedItems");
+  console.log("App Mounted. User:", store.state.user);
+
+  // If the user is not logged in, set the default background immediately
+  if (!userLoggedIn.value) {
+    console.log("User not logged in, using default background.");
+    if (!store.state.equippedBackground) {
+      // Set default background for logged-out users
+      store.commit("setEquippedBackground", "/images/cloudyCastle.jpg");
+    }
+  } else {
+    // For logged-in users, fetch equipped items from the backend
+    store.dispatch("fetchEquippedItems");
+  }
+});
+
+// Apply background when it's set or changed
+watch(equippedBackground, (newBackground) => {
+  console.log("Updated background:", newBackground);
+  if (newBackground) {
+    document.body.style.backgroundImage = `url('${newBackground}')`;
+    document.body.style.backgroundSize = 'cover';
+    document.body.style.backgroundPosition = 'center';
+    document.body.style.backgroundAttachment = 'fixed';
+  }
 });
 </script>
 
@@ -30,11 +57,12 @@ onMounted(() => {
   </div>
 </template>
 <style scoped>
-.container{
+.container {
   border-radius: 5px;
   width: 100%;
   font-family: 'Libre Baskerville', serif;
 }
+
 .avatar-container {
   width: 50px;
   height: 50px;
@@ -62,9 +90,11 @@ onMounted(() => {
   text-shadow: 2px 2px 2px #002823, -1px 0 3px #002823;
   font-family: 'Libre Baskerville', serif;
 }
-.main-menu{
+
+.main-menu {
   padding: 0px;
 }
+
 .route {
   margin-top: 0px;
   display: flex;
