@@ -20,6 +20,9 @@ export default {
             maxWrongGuesses: 6,
             score: 0,
             earnedMedal: '', // Track the earned medal
+            modifiers: [],
+            timeLeft: 60,
+            timerInterval: null, // Store the timer interval ID
         };
     },
     computed: {
@@ -31,6 +34,7 @@ export default {
         },
         gameOverMessage() {
             if (this.gameOver) {
+                clearInterval(this.timerInterval);
                 return `${this.wordGuessed ? "🎉 You Win! 🎉" : "☠️ Game Over! The word was: " + this.secretWord} ${this.earnedMedal ? `You earned the ${this.earnedMedal} medal!` : ''}`;
             }
             return '';
@@ -48,11 +52,67 @@ export default {
         }
     },
     mounted() {
-        this.fetchRandomPhrase();
+        const isDailyChallenge = this.$route.query.daily === 'true';
+        if (isDailyChallenge) {
+            this.loadModifiers();
+        } else {
+            this.fetchRandomPhrase(); // Skip modifiers
+        }
     },
     methods: {
+        async loadModifiers() {
+            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+            try {
+                const res = await axios.get(`${API_URL}/challenge/daily`);
+                const challenge = res.data;
+                console.log(challenge)
+                if (challenge && challenge.game == "Hangman" && challenge.variation) {
+                    this.modifiers = challenge.variation.split(',');
+                    this.applyModifiers();
+                }
+            } catch (err) {
+                console.error("Failed to fetch challenge modifiers", err);
+            }
+            await this.fetchRandomPhrase();
+        },
+        applyModifiers() {
+            if (this.modifiers.includes("5 guesses")) {
+                this.maxWrongGuesses = 5;
+                this.wrongGuesses = 1;
+            }
+            console.log("Applied Modifiers:", this.modifiers);
+            console.log("Max Wrong Guesses:", this.maxWrongGuesses);
+            console.log("Timer started?", this.timer ? "Yes" : "No");
+
+        },
+        startTimer() {
+            this.timeLeft = 60;
+
+            this.timerInterval = setInterval(() => {
+                if (this.timeLeft > 0) {
+                    this.timeLeft--;
+                } else {
+                    clearInterval(this.timerInterval);
+                    this.gameOver = true; // Set the game as over when the timer runs out
+                }
+            }, 1000);
+
+            // Fail the game after 60 seconds
+            this.timer = setTimeout(() => {
+                if (!this.gameOver) {
+                    this.wrongGuesses = this.maxWrongGuesses;
+                }
+            }, 60000); // 1 minute
+        },
+        beforeUnmount() {
+            if (this.timer) clearTimeout(this.timer);
+            if (this.timerInterval) clearInterval(this.timerInterval);
+        },
         startGame() {
             this.start = true;
+            if (this.modifiers.includes("Timer")) {
+                this.startTimer();
+            }
         },
         handleGameOver() {
             this.updateAchievements();
@@ -63,6 +123,10 @@ export default {
             this.wrongGuesses = 0;
             this.fetchRandomPhrase();
             this.keyStates = {};
+            if (this.modifiers.includes("Timer")) {
+                this.timer = 60;
+                this.startTimer();
+            }
         },
         async updateAchievements() {
             if (!this.$store.state.user) {
@@ -110,7 +174,7 @@ export default {
         async fetchRandomPhrase() {
             try {
                 let phraseWords = [];
-                const phraseLength = Math.floor(Math.random() * 3) + 2; // 2-4 words in total
+                const phraseLength = this.modifiers.includes("Two words instead of one") ? 2 : 1;
 
                 while (phraseWords.length <= phraseLength) {
                     // Fetch a random adjective
@@ -198,11 +262,22 @@ export default {
                 <button class="button-info" @click="startGame">Start Game</button>
             </div>
         </div>
+
         <div v-if="start" class="container">
             <div v-if="gameOver" class="game-over">
                 <h2>{{ gameOverMessage }}, Score: {{ score }}</h2>
                 <button @click="restartGame">Play Again</button>
             </div>
+            <div v-if="modifiers.length" class="modifiers-active">
+                <h3>Daily Challenge Modifiers:</h3>
+                <ul>
+                    <li v-for="mod in modifiers" :key="mod">{{ mod }}</li>
+                </ul>
+            </div>
+            <div v-if="modifiers.includes('Timer')" class="timer">
+                <h3>⏳ Time Left: {{ timeLeft }}s</h3>
+            </div>
+
             <div class="hang">
                 <HangMan :wrongGuesses="wrongGuesses" />
             </div>
@@ -221,7 +296,8 @@ export default {
     font-family: Arial, sans-serif;
     text-align: center;
     margin: 20px auto;
-    background-color: rgba(142, 68, 173, 0.6); /* Purple with 60% opacity */    
+    background-color: rgba(142, 68, 173, 0.6);
+    /* Purple with 60% opacity */
     padding: 20px;
     border-radius: 10px;
     max-width: 10000px;
@@ -261,6 +337,12 @@ export default {
 .info-content p {
     font-size: 18px;
     margin-bottom: 30px;
+}
+
+.timer {
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
 }
 
 h2 {

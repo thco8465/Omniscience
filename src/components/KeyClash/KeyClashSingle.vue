@@ -180,9 +180,9 @@ const resetGame = () => {
     player1Score.value = 0;
     player1Keys.value = []
     stageWinner.value = 0;
-    gameOverMessage = ''
-    totalScore = 0
-    medal = ''
+    gameOverMessage.value = ''
+    totalScore.value = 0
+    medal.value = ''
     startStage();
 };
 

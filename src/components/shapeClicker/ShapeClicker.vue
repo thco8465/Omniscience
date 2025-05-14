@@ -2,7 +2,14 @@
   <div v-if="!start" class="info-screen">
     <div class="info-content">
       <h2>Click-a-Palooza Rules</h2>
-      <p>Click all shapes except for the one highlighted! You have 10 seconds each level</p>
+      <div v-if="dailyModifiers.targetSpecificShape">
+        <p v-if="challengeName"><strong>Challenge:</strong> {{ challengeName }}</p>
+        <p v-if="challengeDescription">{{ challengeDescription }}</p>
+        <p>Click only the <strong class="target">{{ targetShape }}</strong> shapes!</p>
+      </div>
+      <p v-else>
+        Click all shapes except for the one highlighted!
+      </p>
       <p>Gold: 10 Levels Reached</p>
       <p>Silver: 7 Levels Reached </p>
       <p>Bronze: 4 Levels Reached</p>
@@ -18,14 +25,18 @@
       <button @click="startGame">Start Again</button>
     </div>
     <div v-else class="timer">
-  <div class="level-time">
-    <p>Level: {{ level }}</p>
-    <p>Time remaining: {{ timeRemaining }}s</p>
-  </div>
-  <div>
-    <p>Do NOT click: <strong class="forbidden">{{ forbiddenShape }}</strong></p>
-  </div>
-</div>
+      <div class="level-time">
+        <p>Level: {{ level }}</p>
+        <p>Time remaining: {{ timeRemaining }}s</p>
+        <div class="timer-bar-container">
+          <div class="timer-bar" :style="{ width: (timeRemaining / totalTime * 100) + '%' }"></div>
+        </div>
+
+      </div>
+      <div>
+        <p>Do NOT click: <strong class="forbidden">{{ forbiddenShape }}</strong></p>
+      </div>
+    </div>
     <div class="game-container">
       <div v-for="(shape, index) in shapes" :key="index" :class="['shape', shape.type, { clicked: shape.clicked }]"
         @click="handleShapeClick(index)" :style="{
@@ -51,7 +62,13 @@ export default {
       level: 1,
       medal: '',
       start: false,
-      forbiddenShape: ''
+      forbiddenShape: '',
+      targetShape: '',
+      totalTime: 10, // default, overridden in startTimer
+      // existing state...
+      dailyModifiers: {},
+      challengeName: '',
+      challengeDescription: '',
     };
   },
   methods: {
@@ -67,6 +84,25 @@ export default {
         this.spawnShapes();
         this.startTimer();
       })
+    },
+    async loadModifiers() {
+      console.log('inside load')
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      try {
+        const res = await axios.get(`${API_URL}/challenge/daily`);
+        const challenge = res.data;
+        console.log("Loaded Click-a-Palooza challenge:", challenge);
+
+        if (challenge && challenge.game === "Click-a-Palooza" && challenge.variation) {
+          this.challengeName = challenge.name || '';
+          this.challengeDescription = challenge.description || '';
+
+          const modifierObj = JSON.parse(challenge.variation);
+          this.dailyModifiers = modifierObj;
+        }
+      } catch (err) {
+        console.error("Failed to fetch Click-a-Palooza challenge modifiers", err);
+      }
     },
     nextLevel() {
       this.shapes = [];
@@ -85,7 +121,9 @@ export default {
       const colors = ['red', 'green', 'blue', 'yellow', 'purple', 'orange'];
       const placedShapes = [];
       this.forbiddenShape = shapeTypes[Math.floor(Math.random() * shapeTypes.length)];
-
+      if (this.dailyModifiers.targetSpecificShape) {
+        this.targetShape = shapeTypes[Math.floor(Math.random() * shapeTypes.length)];
+      }
       for (let i = 0; i < numShapes; i++) {
         let newShape;
         let attempts = 0;
@@ -109,21 +147,52 @@ export default {
 
         placedShapes.push(newShape);
         this.shapes.push(newShape);
+        if (this.dailyModifiers.shapesMove) {
+          this.moveShape(i); // ✅ i is defined here
+        }
       }
+    },
+    moveShape(index) {
+      const container = document.querySelector('.game-container');
+      const containerRect = container.getBoundingClientRect();
+      const interval = setInterval(() => {
+        if (this.gameOver || this.shapes[index].clicked) {
+          clearInterval(interval);
+          return;
+        }
+        this.shapes[index].top = Math.random() * (containerRect.height - 50);
+        this.shapes[index].left = Math.random() * (containerRect.width - 50);
+      }, 1000); // move every second
     },
     handleShapeClick(index) {
       if (!this.gameOver && !this.shapes[index].clicked) {
-        if (this.shapes[index].type === this.forbiddenShape) {
-          this.gameOver = true;
-          clearInterval(this.timer);
-          this.updateAchievements();
-          this.submitScoreToLeaderboard();
-          return;
+        const shape = this.shapes[index];
+
+        if (this.dailyModifiers.targetSpecificShape) {
+          if (shape.type !== this.targetShape) {
+            this.gameOver = true;
+            clearInterval(this.timer);
+            this.updateAchievements();
+            this.submitScoreToLeaderboard();
+            return;
+          }
+        } else {
+          if (shape.type === this.forbiddenShape) {
+            this.gameOver = true;
+            clearInterval(this.timer);
+            this.updateAchievements();
+            this.submitScoreToLeaderboard();
+            return;
+          }
         }
-        this.shapes[index].clicked = true;
+
+        shape.clicked = true;
         this.score += 1;
 
-        if (this.shapes.every((shape) => shape.clicked || shape.type === this.forbiddenShape)) {
+        if (this.shapes.every((s) =>
+          s.clicked ||
+          (this.dailyModifiers.targetSpecificShape ? s.type !== this.targetShape : s.type === this.forbiddenShape)
+        )) {
           clearInterval(this.timer);
           setTimeout(() => this.nextLevel(), 500);
         }
@@ -150,7 +219,9 @@ export default {
       }
     },
     startTimer() {
-      this.timeRemaining = 10;
+      this.totalTime = this.dailyModifiers.reducedTimePerLevel ? 5 : 10;
+      this.timeRemaining = this.totalTime;
+
       this.timer = setInterval(() => {
         this.timeRemaining -= 1;
         if (this.timeRemaining <= 0) {
@@ -196,6 +267,12 @@ export default {
   beforeUnmount() {
     clearInterval(this.timer);
   },
+  async mounted() {
+    if (this.$route.query.daily?.toLowerCase() === "true") {
+      await this.loadModifiers()
+
+    }
+  },
 };
 </script>
 
@@ -210,13 +287,15 @@ export default {
   text-align: center;
   font-family: Arial, sans-serif;
   margin: 0px auto;
-  background-color: rgba(230, 57, 70, 0.8); /* Transparent red (#e63946) with 80% opacity */
+  background-color: rgba(230, 57, 70, 0.8);
+  /* Transparent red (#e63946) with 80% opacity */
   padding: 20px;
   border-radius: 10px;
   max-width: 600px;
   min-height: 80vh;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  border: 2px solid rgba(247, 201, 72, 0.5); /* Transparent border */
+  border: 2px solid rgba(247, 201, 72, 0.5);
+  /* Transparent border */
 }
 
 /* Info Screen Styles */
@@ -226,12 +305,28 @@ export default {
   left: 0;
   width: 100%;
   height: 80%;
-  background-color: rgba(255, 255, 255, 0.8); /* Transparent white with 80% opacity */
+  background-color: rgba(255, 255, 255, 0.8);
+  /* Transparent white with 80% opacity */
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 10;
   transition: opacity 0.5s ease;
+}
+
+.timer-bar-container {
+  width: 100%;
+  height: 10px;
+  background-color: #ddd;
+  border-radius: 5px;
+  margin-top: 5px;
+  overflow: hidden;
+}
+
+.timer-bar {
+  height: 100%;
+  background-color: #4caf50;
+  transition: width 1s linear;
 }
 
 .info-content {
@@ -251,7 +346,8 @@ export default {
 
 .button-info {
   padding: 15px 30px;
-  background-color: rgba(52, 152, 219, 0.8); /* Transparent blue (#3498db) with 80% opacity */
+  background-color: rgba(52, 152, 219, 0.8);
+  /* Transparent blue (#3498db) with 80% opacity */
   border: none;
   border-radius: 5px;
   color: white;
@@ -261,14 +357,17 @@ export default {
 }
 
 .button-info:hover {
-  background-color: rgba(41, 128, 185, 0.8); /* Darker blue on hover */
+  background-color: rgba(41, 128, 185, 0.8);
+  /* Darker blue on hover */
 }
 
 .game-title {
-  color: rgba(247, 201, 72, 0.8); /* Transparent yellow (#f7c948) with 80% opacity */
+  color: rgba(247, 201, 72, 0.8);
+  /* Transparent yellow (#f7c948) with 80% opacity */
   text-shadow: 2px 2px 2px black, -1px 0 3px #002823;
   font-family: 'Libre Baskerville', serif;
-  background-color: rgba(142, 68, 173, 0.8); /* Transparent purple (#8e44ad) with 80% opacity */
+  background-color: rgba(142, 68, 173, 0.8);
+  /* Transparent purple (#8e44ad) with 80% opacity */
   border-radius: 15px;
   display: flex;
   justify-content: center;
@@ -279,8 +378,10 @@ export default {
   position: relative;
   width: 400px;
   height: 400px;
-  background-color: rgba(243, 243, 243, 0.8); /* Transparent light gray (#f3f3f3) with 80% opacity */
-  border: 2px solid rgba(0, 0, 0, 0.8); /* Transparent black border */
+  background-color: rgba(243, 243, 243, 0.8);
+  /* Transparent light gray (#f3f3f3) with 80% opacity */
+  border: 2px solid rgba(0, 0, 0, 0.8);
+  /* Transparent black border */
   margin-top: 0px;
   overflow: hidden;
   border-radius: 10px;
@@ -313,6 +414,7 @@ export default {
   border-right: 25px solid transparent;
   border-bottom: 50px solid;
   position: absolute;
+  border-radius: 0 !important; /* Prevent rounding */
 }
 
 /* Clicked State */
@@ -328,16 +430,40 @@ export default {
   margin-top: 0px;
 }
 
+.shape {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  transition: top 0.5s ease, left 0.5s ease;
+}
+
+.shape.square {
+  border-radius: 0;
+}
+
+.shape.triangle {
+  width: 0;
+  height: 0;
+  border-left: 25px solid transparent;
+  border-right: 25px solid transparent;
+  border-bottom: 50px solid;
+  background: none;
+}
+
 .level-time {
   display: flex;
   justify-content: center;
-  gap: 20px; /* Adds space between the level and time remaining */
+  gap: 20px;
+  /* Adds space between the level and time remaining */
 }
 
 button {
   padding: 10px;
-  background-color: rgba(223, 255, 0, 0.8); /* Transparent yellow (#dfff00) with 80% opacity */
-  color: rgba(142, 68, 173, 0.8); /* Transparent purple (#8e44ad) with 80% opacity */
+  background-color: rgba(223, 255, 0, 0.8);
+  /* Transparent yellow (#dfff00) with 80% opacity */
+  color: rgba(142, 68, 173, 0.8);
+  /* Transparent purple (#8e44ad) with 80% opacity */
   border: none;
   cursor: pointer;
   font-size: 16px;
@@ -347,7 +473,8 @@ button {
 }
 
 button:hover {
-  background-color: rgba(160, 231, 160, 0.8); /* Transparent greenish-yellow on hover */
+  background-color: rgba(160, 231, 160, 0.8);
+  /* Transparent greenish-yellow on hover */
 }
 
 .game-over {
@@ -355,10 +482,10 @@ button:hover {
   margin: 10px;
   font-size: 24px;
   font-weight: bold;
-  background: rgba(0, 0, 0, 0.7); /* Transparent black with 70% opacity */
+  background: rgba(0, 0, 0, 0.7);
+  /* Transparent black with 70% opacity */
   color: white;
   padding: 20px;
   border-radius: 10px;
 }
-
 </style>

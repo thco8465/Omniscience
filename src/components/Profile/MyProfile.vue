@@ -277,7 +277,7 @@ export default {
 }
 
 .profile-header h1 {
-  font-size: 32px;
+  font-size: 42px;
   font-weight: 600;
   text-shadow: 2px 2px 2px #002823, -1px 0 3px #002823;
 }
@@ -293,11 +293,11 @@ export default {
 }
 
 .avatar {
-  width: 60px;
-  height: 60px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid #f7c948;
+  border: 2px solid #f7c948;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 .info-scores{

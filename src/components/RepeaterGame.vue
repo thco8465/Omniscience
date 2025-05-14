@@ -42,6 +42,7 @@
 
 <script>
 import axios from 'axios';
+import allModifiers from '../../backend/modifiers.json'
 
 export default {
   data() {
@@ -60,6 +61,12 @@ export default {
       isCorrect: false,  // Track whether the submission was correct
       score: 0,
       earnedMedal: '', // Track the earned medal
+      dailyModifiers: {},
+      challengeName: '',
+      challengeDescription: '',
+      includeSymbols: false,
+      doubleLength: false,
+
     };
   },
   methods: {
@@ -67,11 +74,6 @@ export default {
       this.start = true,
         this.sequence = this.generateSequence();
       this.showSequence = true;
-      // Show sequence for 5 seconds
-      // this.sequenceTimer = setTimeout(() => {
-      //   this.showSequence = false;
-      //   this.startCountdown();
-      // }, 5000); // 5 seconds
       this.countdown = 10; // Start with 10 seconds countdown
       this.countdownTimer = setInterval(() => {
         this.countdown--;
@@ -82,12 +84,70 @@ export default {
         }
       }, 1000); // Update countdown every second
     },
+    async loadModifiers() {
+      console.log('inside load');
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      try {
+        const res = await axios.get(`${API_URL}/challenge/daily`);
+        const challenge = res.data;
+        console.log("Loaded Copy Cat challenge:", challenge);
+
+        if (challenge && challenge.game === "Copy Cat" && challenge.variation) {
+          this.challengeName = challenge.name || '';
+          this.challengeDescription = challenge.description || '';
+
+          const selectedVariationNames = challenge.variation.split(',').map(v => v.trim());
+          const gameModifiers = allModifiers[challenge.game];
+
+          let mergedModifiers = {};
+
+          // Loop through the selected variation names and find matching modifier entries
+          selectedVariationNames.forEach(variationName => {
+            const modifierEntry = gameModifiers.find(mod => mod.name === variationName);
+            if (modifierEntry) {
+              Object.assign(mergedModifiers, modifierEntry.modifiers);
+            }
+          });
+
+          // Set individual flags from the merged object
+          this.includeSymbols = mergedModifiers.symbols || false;
+          this.doubleLength = mergedModifiers.Length || false;
+
+          // If needed, save all modifiers
+          this.dailyModifiers = mergedModifiers;
+        }
+      } catch (err) {
+        console.error("Failed to fetch Copy Cat challenge modifiers", err);
+      }
+    },
     generateSequence() {
-      const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
       let generatedSequence = '';
-      for (let i = 0; i < this.level + 2; i++) {  // Length increases with each level
-        const randomIndex = Math.floor(Math.random() * characters.length);
-        generatedSequence += characters[randomIndex];
+      if (this.doubleLength && this.includeSymbols) {
+        characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&';
+        for (let i = 0; i < (this.level + 2) * 2; i++) {  // Length increases with each level
+          const randomIndex = Math.floor(Math.random() * characters.length);
+          generatedSequence += characters[randomIndex];
+        }
+      }
+      else if (this.includeSymbols) {
+        characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&';
+        for (let i = 0; i < (this.level + 2); i++) {  // Length increases with each level
+          const randomIndex = Math.floor(Math.random() * characters.length);
+          generatedSequence += characters[randomIndex];
+        }
+      }
+      else if (this.doubleLength) {
+        for (let i = 0; i < (this.level + 2) * 2; i++) {  // Length increases with each level
+          const randomIndex = Math.floor(Math.random() * characters.length);
+          generatedSequence += characters[randomIndex];
+        }
+      }
+      else {
+        for (let i = 0; i < this.level + 2; i++) {  // Length increases with each level
+          const randomIndex = Math.floor(Math.random() * characters.length);
+          generatedSequence += characters[randomIndex];
+        }
       }
       return generatedSequence;
     },
@@ -122,7 +182,7 @@ export default {
       this.resetLevel();
       this.startGame();  // Restart the game for the next level
     },
-    restartGame(){
+    restartGame() {
       this.level = 1
       this.score = 0
       this.earnedMedal = ''
@@ -205,6 +265,12 @@ export default {
       }
     },
   },
+  async mounted() {
+    if (this.$route.query.daily?.toLowerCase() === "true") {
+      await this.loadModifiers()
+
+    }
+  },
 };
 </script>
 
@@ -212,17 +278,17 @@ export default {
 <style scoped>
 /* Info Screen Styles */
 .info-screen {
-    position: fixed;
-    top: 100px;
-    left: 0;
-    width: 100%;
-    height: 80%;
-    background-color: rgba(255, 255, 255, 0.8);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 10;
-    transition: opacity 0.5s ease;
+  position: fixed;
+  top: 100px;
+  left: 0;
+  width: 100%;
+  height: 80%;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+  transition: opacity 0.5s ease;
 }
 
 .info-content {
@@ -260,7 +326,8 @@ export default {
   font-family: Arial, sans-serif;
   text-align: center;
   margin: 20px auto;
-  background-color: rgba(244, 244, 244, 0.7); /* Translucent light gray background */
+  background-color: rgba(244, 244, 244, 0.7);
+  /* Translucent light gray background */
   padding: 20px;
   border-radius: 10px;
   max-width: 600px;

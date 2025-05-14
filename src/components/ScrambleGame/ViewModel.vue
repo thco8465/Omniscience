@@ -2,8 +2,14 @@
   <div v-if="!start" class="info-screen">
     <div class="info-content">
       <h2>Terminology Twister Rules</h2>
-      <p>Unscramble each word or abbrieviation! You have 60 seconds. Difficulty increases every three correct guesses
-      </p>
+      <div v-if="$route.query.daily === 'true'" class="daily-challenge-banner">
+        <h2 class="daily-name">Daily Challenge: {{ challengeName }}</h2>
+        <p class="daily-description">{{ challengeDescription }}</p>
+      </div>
+      <div v-else>
+        <p>Unscramble each word or abbrieviation! You have 60 seconds. Difficulty increases every three correct guesses
+        </p>
+      </div>
       <p>Gold: 10 Words Guessed</p>
       <p>Silver: 5 Words Guessed </p>
       <p>Bronze: 3 Words Guessed</p>
@@ -64,6 +70,9 @@ export default {
       wordList: [],  // Array to store words and definitions,
       isActive: true,
       start: false,
+      modifiers: {},
+      challengeName: '',
+      challengeDescription: '',
     };
   },
   computed: {
@@ -82,24 +91,52 @@ export default {
     }
   },
   methods: {
+    async loadModifiers() {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      try {
+        const res = await axios.get(`${API_URL}/challenge/daily`);
+        const challenge = res.data;
+        console.log("Loaded challenge:", challenge);
+
+        if (challenge && challenge.game === "Terminology Twisters" && challenge.variation) {
+          this.challengeName = challenge.name || '';
+          this.challengeDescription = challenge.description || '';
+
+          const modifierObj = JSON.parse(challenge.variation);
+          this.modifiers = modifierObj;
+
+          this.applyModifiers(); // Apply things like timer or wordCount
+        }
+      } catch (err) {
+        console.error("Failed to fetch challenge modifiers", err);
+      }
+    },
     async fetchWord() {
       try {
-        const response = await fetch(`http://localhost:3000/get-word?length=${this.level + 2}`);
-        const data = await response.json();
-        const randomWord = data.word;
-        let definition = data.definition;
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+        const wordCount = this.modifiers.wordCount || 1;
 
-        // Truncate definition to only the first sentence
-        if (definition) {
-          const firstSentence = definition.split('.')[0];  // Get the part before the first period
-          definition = firstSentence + (firstSentence ? '.' : '');  // Ensure it ends with a period
+        let allWords = [];
+        for (let i = 0; i < wordCount; i++) {
+          const response = await fetch(`${API_URL}/get-word?length=${this.level + 2}`);
+          const data = await response.json();
+          let definition = data.definition || '';
+          if (definition) {
+            const firstSentence = definition.split('.')[0];
+            definition = firstSentence + (firstSentence ? '.' : '');
+          }
+          allWords.push({ word: data.word, definition });
         }
 
-        console.log(data, definition);
-        this.currentWord = { original: randomWord, scrambled: this.scrambleWord(randomWord) };
+        const combinedWord = allWords.map(w => w.word).join('');
+        const combinedScrambled = this.scrambleWord(combinedWord);
 
-        // Store word and truncated definition in wordList
-        this.wordList.push({ word: randomWord, definition });
+        this.currentWord = { original: combinedWord, scrambled: combinedScrambled };
+
+        allWords.forEach(entry => {
+          this.wordList.push({ word: entry.word, definition: entry.definition });
+        });
+
       } catch (error) {
         console.error("Error fetching word:", error);
       }
@@ -114,6 +151,14 @@ export default {
       this.incorrect = false;  // Reset incorrect state
       this.level = 1;
       this.wordList = [];  // Clear word list when starting a new game
+
+      // Apply modifier-based timer if available
+      if (this.$route.query.daily == "true" && this.modifiers.timer && this.modifiers.timeLimitSeconds) {
+        this.timeRemaining = this.modifiers.timeLimitSeconds;
+      } else {
+        this.timeRemaining = 60;
+      }
+
       this.nextWord();
       this.startTimer();
     },
@@ -126,7 +171,7 @@ export default {
       }
     },
     checkAnswer() {
-      if (this.userInput.toLowerCase() == this.currentWord.original) {
+      if (this.userInput.trim().toLowerCase() === this.currentWord.original.toLowerCase()) {
         console.log('Correct guess');
         this.score += 1;
         this.nextWord();  // Get a new word after a correct answer
@@ -207,13 +252,18 @@ export default {
   },
   mounted() {
     //this.startGame();
-  }, beforeUnmount() {
+    if (this.$route.query.daily == "true") {
+      console.log('mods loaded')
+      this.loadModifiers()
+    }
+  },
+  beforeUnmount() {
     this.isActive = false; // Prevent alerts when navigating away
-    clearInterval(this.intervalId);
+    clearInterval(this.timer);
   },
   beforeRouteLeave(to, from, next) {
     this.isActive = false; // Ensure no alerts after leaving the route
-    clearInterval(this.intervalId);
+    clearInterval(this.timer);
     next();
   },
 };
@@ -227,12 +277,14 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 40vh; /* Optional: set a minimum height, but let it grow */
+  min-height: 40vh;
+  /* Optional: set a minimum height, but let it grow */
   text-align: center;
   margin-top: 50px;
   font-family: Arial, sans-serif;
   margin: 20px auto;
-  background-color: rgba(247, 201, 72, 0.8); /* Transparent yellow (#f7c948) with 80% opacity */
+  background-color: rgba(247, 201, 72, 0.8);
+  /* Transparent yellow (#f7c948) with 80% opacity */
   padding: 20px;
   border-radius: 10px;
   max-width: 600px;
@@ -242,18 +294,38 @@ export default {
 
 /* Info Screen Styles */
 .info-screen {
-    position: fixed;
-    top: 100px;
-    left: 0;
-    width: 100%;
-    height: 80%;
-    background-color: rgba(255, 255, 255, 0.9);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 10;
-    transition: opacity 0.5s ease;
+  position: fixed;
+  top: 100px;
+  left: 0;
+  width: 100%;
+  height: 80%;
+  background-color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+  transition: opacity 0.5s ease;
 }
+
+.daily-challenge-banner {
+  background-color: #fff3cd;
+  border-left: 5px solid #ffc107;
+  padding: 10px;
+  margin: 10px 0 20px;
+  border-radius: 5px;
+}
+
+.daily-name {
+  font-weight: bold;
+  font-size: 1.2em;
+  margin-bottom: 5px;
+}
+
+.daily-description {
+  margin: 0;
+  font-size: 1em;
+}
+
 .info-content {
   text-align: center;
   max-width: 400px;
@@ -271,22 +343,26 @@ export default {
 
 .button-info {
   padding: 15px 30px;
-  background-color: rgba(52, 152, 219, 0.8); /* Transparent blue (#3498db) with 80% opacity */
+  background-color: rgba(52, 152, 219, 0.8);
   border: none;
   border-radius: 5px;
   color: white;
   font-size: 18px;
   cursor: pointer;
 }
+
 .button-info:hover {
-  background-color: rgba(41, 128, 185, 0.8); /* Darker blue on hover */
+  background-color: rgba(41, 128, 185, 0.8);
+  /* Darker blue on hover */
 }
 
 .game-title {
-  color: rgba(247, 201, 72, 0.8); /* Transparent yellow with 80% opacity */
+  color: rgba(247, 201, 72, 0.8);
+  /* Transparent yellow with 80% opacity */
   text-shadow: 1px 1px 1px black, -1px 0 3px #002823;
   font-family: 'Libre Baskerville', serif;
-  background-color: rgba(142, 68, 173, 0.8); /* Transparent purple (#8e44ad) with 80% opacity */
+  background-color: rgba(142, 68, 173, 0.8);
+  /* Transparent purple (#8e44ad) with 80% opacity */
   border-radius: 15px;
   display: flex;
   justify-content: center;
@@ -306,15 +382,18 @@ export default {
   padding: 10px;
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border: 3px solid rgba(142, 68, 173, 0.8); /* Transparent purple border */
+  border: 3px solid rgba(142, 68, 173, 0.8);
+  /* Transparent purple border */
   text-align: left;
 }
 
 
 button {
   padding: 10px;
-  background-color: rgba(142, 68, 173, 0.8); /* Transparent purple (#8e44ad) with 80% opacity */
-  color: rgba(247, 201, 72, 0.8); /* Transparent yellow text with 80% opacity */
+  background-color: rgba(142, 68, 173, 0.8);
+  /* Transparent purple (#8e44ad) with 80% opacity */
+  color: rgba(247, 201, 72, 0.8);
+  /* Transparent yellow text with 80% opacity */
   border: none;
   cursor: pointer;
   font-size: 16px;
@@ -326,7 +405,8 @@ button {
 }
 
 button:hover {
-  background-color: rgba(74, 144, 226, 0.8); /* Transparent blue on hover (#4a90e2) */
+  background-color: rgba(74, 144, 226, 0.8);
+  /* Transparent blue on hover (#4a90e2) */
 }
 
 .shake {

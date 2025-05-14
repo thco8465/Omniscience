@@ -1,0 +1,139 @@
+{
+    "Hangman": [
+      {
+        "name": "Race Against Time",
+        "description": "Complete the word before time runs out.",
+        "modifiers": {
+          "timer": true,
+          "timeLimitSeconds": 30
+        }
+      },
+      {
+        "name": "Double Trouble",
+        "description": "Guess two words instead of one.",
+        "modifiers": {
+          "wordCount": 2
+        }
+      },
+      {
+        "name": "Tight Guesses",
+        "description": "Only 5 incorrect guesses allowed.",
+        "modifiers": {
+          "maxGuesses": 5
+        }
+      }
+    ],
+    "Terminology Twisters": [
+      {
+        "name": "Scramble Rush",
+        "description": "Solve within a strict time limit.",
+        "modifiers": {
+          "timer": true,
+          "timeLimitSeconds": 20
+        }
+      },
+      {
+        "name": "Double Unscramble",
+        "description": "Unscramble two words at once.",
+        "modifiers": {
+          "wordCount": 2
+        }
+      }
+    ],
+    "Click-a-Palooza": [
+      {
+        "name": "Target Specific",
+        "description": "Only click the shape listed.",
+        "modifiers": {
+          "targetSpecificShape": true
+        }
+      },
+      {
+        "name": "Moving Mayhem",
+        "description": "All shapes move around the screen.",
+        "modifiers": {
+          "shapesMove": true
+        }
+      },
+      {
+        "name": "Quick Reflex",
+        "description": "You have less time to hit targets.",
+        "modifiers": {
+          "reducedTimePerLevel": true
+        }
+      }
+    ],
+    "Tiles of Terror": [
+      {
+        "name": "Extra Imposter",
+        "description": "One additional imposter tile is present.",
+        "modifiers": {
+          "extraImposterTile": true
+        }
+      },
+      {
+        "name": "Time Crunch",
+        "description": "Complete the level under strict time.",
+        "modifiers": {
+          "timer": true,
+          "timeLimitSeconds": 30
+        }
+      },
+      {
+        "name": "Shifty Tiles",
+        "description": "Tiles move positions after a few seconds.",
+        "modifiers": {
+          "tilesMove": true
+        }
+      }
+    ],
+    "Copy Cat": [
+      {
+        "name": "Double Length",
+        "description": "Double the sequence length!",
+        "modifiers": {
+          "Length": true
+        }
+      },
+      {
+        "name": "Include Symbols",
+        "description": "Add new symbols that will appear",
+        "modifiers": {
+          "symbols": true
+        }
+      }
+    ],
+    "Twenty One": [
+      {
+        "name": "No Face Cards",
+        "description": "Only number cards are used.",
+        "modifiers": {
+          "excludeFaceCards": true
+        }
+      },
+      {
+        "name": "Go Big",
+        "description": "Try to reach a higher total: 31.",
+        "modifiers": {
+          "maxTotal": 31
+        }
+      }
+    ],
+    "Key Clash Single": [
+      {
+        "name": "Color Chaos",
+        "description": "The background and key colors change frequently.",
+        "modifiers": {
+          "colorShuffle": true
+        }
+      },
+      {
+        "name": "Inverted Controls",
+        "description": "Up is down, left is right — stay sharp!",
+        "modifiers": {
+          "inverseControls": true
+        }
+      }
+    ]
+  }
+  

@@ -13,6 +13,7 @@ const navigateToGame = (route) => {
 };
 // Define the games list
 const games = [
+  {name: 'Daily Challenge', route: '/DailyChallenge'},
   { name: 'Hangman', route: '/HangView' },
   { name: 'Alpha Arena', route: '/AlphaArena' },
   { name: 'Alpha Arena(Quickplay)', route: '/AlphaOnline' },

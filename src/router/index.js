@@ -25,6 +25,8 @@ import AlphaCustom from '@/components/Wordle/WordleInvite.vue'
 import ScenicView from '@/views/ScenicView.vue'
 import AboutSite from '@/components/AboutSite.vue'
 import MyStats from '@/components/Statistics/MyStats.vue'
+import MyJournal from '@/components/MyJournal.vue'
+import DailyChallenge from '@/components/DailyChallenge/DailyChallenge.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -158,6 +160,16 @@ const router = createRouter({
       path:'/MyStats',
       name: 'MyStats',
       component: MyStats,
+    },
+    {
+      path: '/MyJournal',
+      name: 'MyJournal',
+      component: MyJournal,
+    },
+    {
+      path: '/DailyChallenge',
+      name: 'DailyChallenge',
+      component: DailyChallenge,
     }
   ],
 })

@@ -8,6 +8,8 @@ import db from './Database/db.mjs';
 import leaderboardRoutes from './endpoints/leaderboards.mjs';
 import { initializeWebSocketServer, initializeKeyClash } from './endpoints/keyClash.mjs'; // Import WebSocket server
 import { initializeWordle } from './endpoints/alphaArena.mjs';
+import journalRoutes from './endpoints/myJournal.mjs'
+import challengeRoutes from './endpoints/challenge.mjs'
 
 const app = express();
 const PORT = process.env.PORT || 10000;
@@ -25,6 +27,8 @@ app.options('*', cors(corsOptions));
 
 app.use(bodyParser.json());
 app.use('/leaderboard', leaderboardRoutes);
+app.use('/journal', journalRoutes)
+app.use('/challenge', challengeRoutes)
 
 // Initialize the WebSocket server (only once)
 const ioInstance = initializeWebSocketServer(httpServer);

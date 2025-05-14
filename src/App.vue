@@ -5,7 +5,6 @@ import { computed, watch, onMounted } from 'vue';
 import { useStore } from 'vuex';
 
 const store = useStore();
-const equippedAvatar = computed(() => store.state.equippedAvatar);
 const equippedBackground = computed(() => store.state.equippedBackground)
 
 // Check if the user is logged in
@@ -42,12 +41,6 @@ watch(equippedBackground, (newBackground) => {
 
 <template>
   <div class="container">
-    <div class="title">
-      OMNISCIENCE
-      <div v-if="equippedAvatar" class="avatar-container">
-        <img :src="`${equippedAvatar}`" alt="Avatar" class="avatar" />
-      </div>
-    </div>
     <div class="main-menu">
       <MainMenu />
     </div>

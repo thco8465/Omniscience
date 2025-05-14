@@ -3,12 +3,18 @@
     <header>
       <nav>
         <div class="nav-container">
-          <div class="nav-section"></div>
           <div class="nav-links">
+            <div class="title">
+              OMNISCIENCE
+              <!-- <div v-if="equippedAvatar" class="avatar-container">
+                <img :src="`${equippedAvatar}`" alt="Avatar" class="avatar" />
+              </div> -->
+            </div>
             <RouterLink to="/">Home</RouterLink>
             <RouterLink v-if="userId !== -1" to="/Profile">Profile</RouterLink>
             <RouterLink v-if="userId !== -1" to="/Achievements">Medals</RouterLink>
             <RouterLink v-if="userId !== -1" to="/MyStats">Performance</RouterLink>
+            <RouterLink v-if="userId !== -1" to="/MyJournal">Journal</RouterLink>
             <RouterLink to="/Leaderboards">Leaderboards</RouterLink>
             <RouterLink to="/Store">Store</RouterLink>
             <RouterLink to="/AboutSite">About</RouterLink>
@@ -24,7 +30,7 @@
 </template>
 
 <script>
-import { computed } from 'vue';
+import { computed,onMounted } from 'vue';
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
 
@@ -34,6 +40,7 @@ export default {
     const router = useRouter();
 
     const userId = computed(() => store.state.user?.id || -1);
+    // const equippedAvatar = computed(() => store.state.equippedAvatar)
 
     const logout = () => {
       console.log("Logging out...");
@@ -53,7 +60,9 @@ export default {
       router.push('/Login');
     };
 
-
+    // onMounted(() => {
+    //   store.dispatch("fetchEquippedItems");
+    // });
     return { userId, logout };
   }
 };
@@ -78,6 +87,34 @@ export default {
   flex-direction: column;
   justify-content: flex-start;
   z-index: 9999;
+}
+
+.avatar-container {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-left: 10px;
+  border: 1px solid #f7c948;
+}
+
+.avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.title {
+  display: flex;
+  /* justify-content: center; */
+  margin-left: 0px;
+  align-items: center;
+  justify-content: center;
+  color: #f7c948;
+  font-size: 32px;
+  letter-spacing: -1.5px;
+  text-shadow: 2px 2px 2px #002823, -1px 0 3px #002823;
+  font-family: 'Libre Baskerville', serif;
 }
 
 /* Sidebar Expansion on Hover */
@@ -164,9 +201,8 @@ nav a.router-link-exact-active {
   left: -150%;
   width: 250%;
   height: 100%;
-  background: linear-gradient(120deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 100%);
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.05) 100%);
   transform: skewX(-20deg);
-  transition: 2s;
   animation: subtleShine 8s infinite linear;
   animation-delay: 4s;
   pointer-events: none;
@@ -175,10 +211,20 @@ nav a.router-link-exact-active {
 @keyframes subtleShine {
   0% {
     left: -150%;
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  90% {
+    opacity: 1;
   }
 
   100% {
     left: 150%;
+    opacity: 0;
   }
 }
 </style>
