@@ -19,8 +19,9 @@ const db = pgp(process.env.DATABASE_URL ? {
   password: process.env.DB_PASSWORD || 'ArkhamknightN7?'
 });
 
+// Simpler approach - directly use the manyOrNone method
 db.query = async function(text, params) {
-  return this.any(text, params);
+  return this.manyOrNone(text, params);
 };
 
 // Create users table
