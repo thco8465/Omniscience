@@ -1,13 +1,30 @@
-import pgPromise from 'pg-promise'; // Import pg-promise correctly
+import pgPromise from 'pg-promise';
 import dotenv from 'dotenv';
+import dns from 'dns';
 
 // Load environment variables from .env file
 dotenv.config();
 
+// Configure DNS to prefer IPv4
+dns.setDefaultResultOrder('ipv4first');
+
 // Initialize pg-promise
 const pgp = pgPromise();
-// Use the connection string from environment variable
-const db = pgp(process.env.DATABASE_URL || {
+
+// Fix connection string if needed
+let connectionString = process.env.DATABASE_URL;
+if (connectionString) {
+  // Extract parts of the connection string
+  const match = connectionString.match(/postgresql:\/\/([^:]+):([^@]+)@([^/]+)\/(.+)/);
+  if (match) {
+    const [, user, password, host, database] = match;
+    // Reconstruct with encoded password
+    connectionString = `postgresql://${user}:${encodeURIComponent(password)}@${host}/${database}`;
+  }
+}
+
+// Use the fixed connection string or fallback to individual params
+const db = pgp(connectionString || {
   host: process.env.DB_HOST,
   port: process.env.DB_PORT,
   database: process.env.DB_DATABASE,
@@ -15,6 +32,9 @@ const db = pgp(process.env.DATABASE_URL || {
   password: process.env.DB_PASSWORD,
   ssl: { rejectUnauthorized: false },
 });
+
+// Rest of your code remains the same
+
 // Create users table
 db.none(`
   CREATE TABLE IF NOT EXISTS users (
