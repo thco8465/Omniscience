@@ -7,41 +7,16 @@ dotenv.config();
 // Initialize pg-promise
 const pgp = pgPromise();
 
-// Debug the connection string
-console.log("Original DATABASE_URL:", process.env.DATABASE_URL);
-
-// For Supabase, the correct pooler format is:
-// postgresql://postgres:[password]@[project-ref]-pooler.supabase.co:5432/postgres
-// NOT db.[project-ref].pooler.supabase.co
-
-let connectionString = process.env.DATABASE_URL;
-if (connectionString) {
-  // Correct the pooler hostname format
-  connectionString = connectionString.replace(
-    'db.vfdufaftxkhtdptgvazn.supabase.co',
-    'vfdufaftxkhtdptgvazn-pooler.supabase.co'
-  );
-  
-  console.log("Modified connection string:", connectionString);
-  
-  // Extract parts of the connection string
-  const match = connectionString.match(/postgresql:\/\/([^:]+):([^@]+)@([^/]+)\/(.+)/);
-  if (match) {
-    const [, user, password, host, database] = match;
-    // Reconstruct with encoded password
-    connectionString = `postgresql://${user}:${encodeURIComponent(password)}@${host}/${database}`;
-    console.log("Final connection string:", connectionString);
-  }
-}
-
-// Use the fixed connection string or fallback to individual params
-const db = pgp(connectionString || {
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  database: process.env.DB_DATABASE,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  ssl: { rejectUnauthorized: false },
+// Use either the connection string or individual parameters
+const db = pgp(process.env.DATABASE_URL ? {
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+} : {
+  host: process.env.DB_HOST || 'localhost',
+  port: process.env.DB_PORT || 5432,
+  database: process.env.DB_DATABASE || 'omnipotent',
+  user: process.env.DB_USER || 'postgres',
+  password: process.env.DB_PASSWORD || 'ArkhamknightN7?'
 });
 
 // Create users table
