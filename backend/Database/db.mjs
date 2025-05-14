@@ -1,19 +1,21 @@
 import pgPromise from 'pg-promise';
 import dotenv from 'dotenv';
-import dns from 'dns';
 
 // Load environment variables from .env file
 dotenv.config();
 
-// Configure DNS to prefer IPv4
-dns.setDefaultResultOrder('ipv4first');
-
 // Initialize pg-promise
 const pgp = pgPromise();
 
-// Fix connection string if needed
+// Fix connection string to use the pooler
 let connectionString = process.env.DATABASE_URL;
 if (connectionString) {
+  // Replace the regular hostname with the pooler hostname
+  connectionString = connectionString.replace(
+    'db.vfdufaftxkhtdptgvazn.supabase.co',
+    'db.vfdufaftxkhtdptgvazn.pooler.supabase.co'
+  );
+  
   // Extract parts of the connection string
   const match = connectionString.match(/postgresql:\/\/([^:]+):([^@]+)@([^/]+)\/(.+)/);
   if (match) {
@@ -25,13 +27,16 @@ if (connectionString) {
 
 // Use the fixed connection string or fallback to individual params
 const db = pgp(connectionString || {
-  host: process.env.DB_HOST,
+  host: process.env.DB_HOST ? process.env.DB_HOST.replace('db.', 'db.pooler.') : null,
   port: process.env.DB_PORT,
   database: process.env.DB_DATABASE,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   ssl: { rejectUnauthorized: false },
 });
+
+// Rest of your code remains the same
+
 
 // Rest of your code remains the same
 
