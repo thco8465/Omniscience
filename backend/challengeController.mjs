@@ -28,8 +28,8 @@ async function getDailyChallenge(req, res) {
       'SELECT * FROM public.daily_challenges WHERE date = $1',
       [today]
     );
-    console.log(existing[0])
     if (existing.length > 0) {
+      console.log(existing[0])
       return res.json(existing[0]);
     }
 
