@@ -38,7 +38,7 @@ function initializeKeyClash(io) {
         socket.on('clearSentInvite', async ({ inviteId }) => {
             try {
                 // Delete the invite from the database
-                const result = await db.query('DELETE FROM invites WHERE id = $1 RETURNING *', [inviteId]);
+                const result = await db.query('DELETE FROM public.invites WHERE id = $1 RETURNING *', [inviteId]);
 
                 // Check if the invite was deleted
                 if (result.length > 0) {
@@ -70,8 +70,8 @@ function initializeKeyClash(io) {
                 try {
                     // Retrieve invites from database
                     console.log('inside fetch', username)
-                    invitesReceived = await db.query('SELECT * FROM invites WHERE to_username = $1 and status = $2 limit 10', [username, 'Pending']);
-                    invitesSent = await db.query('SELECT * FROM invites WHERE from_username = $1 limit 10', [username]);
+                    invitesReceived = await db.query('SELECT * FROM public.invites WHERE to_username = $1 and status = $2 limit 10', [username, 'Pending']);
+                    invitesSent = await db.query('SELECT * FROM public.invites WHERE from_username = $1 limit 10', [username]);
                     //console.log(invitesReceived)
                     //console.log(invitesSent)
 
@@ -94,11 +94,11 @@ function initializeKeyClash(io) {
         socket.on('send_invite', async ({ to, from }) => {  // Match the new payload
             //console.log(`Received invite from ${from} to ${to}`);
 
-            const userExists = await db.query('SELECT * FROM users WHERE username = $1', [to]);
+            const userExists = await db.query('SELECT * FROM public.users WHERE username = $1', [to]);
             //console.log(userExists)
             if (userExists.length > 0) {
                 const result = await db.query(
-                    'INSERT INTO invites (from_username, to_username, status) VALUES ($1, $2, $3) RETURNING *',
+                    'INSERT INTO public.invites (from_username, to_username, status) VALUES ($1, $2, $3) RETURNING *',
                     [from, to, 'Pending']
                 );
 
@@ -177,7 +177,7 @@ function initializeKeyClash(io) {
 
         socket.on('getIds', async ({ username }) => {
             try {
-                const result = await db.query('SELECT id FROM users WHERE username = $1', [username]);
+                const result = await db.query('SELECT id FROM public.users WHERE username = $1', [username]);
                 if (result.length === 0) {
                     socket.emit('error', 'Invite not found or already accepted/declined');
                     return;
@@ -481,7 +481,7 @@ function initializeKeyClash(io) {
     async function fetchUsername(id) {
         const username = await db.query(
             `SELECT username
-            FROM users
+            FROM public.users
             WHERE id = $1`,
             [id]
         );

@@ -288,7 +288,7 @@ function initializeWordle(io) {
         socket.on('clearSentInvite', async ({ inviteId }) => {
             try {
                 // Delete the invite from the database
-                const result = await db.query('DELETE FROM aainvites WHERE id = $1 RETURNING *', [inviteId]);
+                const result = await db.query('DELETE FROM public.aainvites WHERE id = $1 RETURNING *', [inviteId]);
 
                 // Check if the invite was deleted
                 if (result.length > 0) {
@@ -320,8 +320,8 @@ function initializeWordle(io) {
                 try {
                     // Retrieve invites from database
                     console.log('inside fetch', username)
-                    invitesReceived = await db.query('SELECT * FROM aainvites WHERE to_username = $1 and status = $2 limit 10', [username, 'Pending']);
-                    invitesSent = await db.query('SELECT * FROM aainvites WHERE from_username = $1 limit 10', [username]);
+                    invitesReceived = await db.query('SELECT * FROM public.aainvites WHERE to_username = $1 and status = $2 limit 10', [username, 'Pending']);
+                    invitesSent = await db.query('SELECT * FROM public.aainvites WHERE from_username = $1 limit 10', [username]);
                     //console.log(invitesReceived)
                     //console.log(invitesSent)
 
@@ -348,7 +348,7 @@ function initializeWordle(io) {
             //console.log(userExists)
             if (userExists.length > 0) {
                 const result = await db.query(
-                    'INSERT INTO aainvites (from_username, to_username, status) VALUES ($1, $2, $3) RETURNING *',
+                    'INSERT INTO public.aainvites (from_username, to_username, status) VALUES ($1, $2, $3) RETURNING *',
                     [from, to, 'Pending']
                 );
 
@@ -369,7 +369,7 @@ function initializeWordle(io) {
         // Handle accepting an invite
         socket.on('acceptInvite', async ({ inviteId }) => {
             try {
-                const inviteResult = await db.query(`select * from aainvites where id = $1`, [inviteId])
+                const inviteResult = await db.query(`select * from public.aainvites where id = $1`, [inviteId])
                 if (inviteResult.length == 0) {
                     socket.emit('inviteFailed', { message: "invite not found or already accepted/declined" })
                     return;
@@ -434,7 +434,7 @@ function initializeWordle(io) {
 
         socket.on('getIds', async ({ username }) => {
             try {
-                const result = await db.query('SELECT id FROM users WHERE username = $1', [username]);
+                const result = await db.query('SELECT id FROM public.users WHERE username = $1', [username]);
                 if (result.length === 0) {
                     socket.emit('error', 'Invite not found or already accepted/declined');
                     return;
@@ -492,7 +492,7 @@ function initializeWordle(io) {
 async function fetchUsername(id) {
     const username = await db.query(
         `SELECT username
-        FROM users
+        FROM public.users
         WHERE id = $1`,
         [id]
     );
@@ -502,7 +502,7 @@ async function fetchAvatar(id) {
     try {
         const avatarResult = await db.query(
             `SELECT ui.user_id, i.image_url AS avatar
-            FROM user_items ui
+            FROM public.user_items ui
             JOIN items i ON ui.item_id = i.id AND i.type = 'avatar'
             WHERE ui.user_id = $1 AND ui.equipped = true`,
             [id]

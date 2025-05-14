@@ -11,7 +11,7 @@ router.get('/getUserIdByUsername', async (req, res) => {
     console.log('Received username:', username);
 
     try {
-        const result = await db.query('SELECT id FROM users WHERE username = $1', [username]);
+        const result = await db.query('SELECT id FROM public.users WHERE username = $1', [username]);
         console.log("Query result:", result);
 
         // Check if result is an array or has rows
@@ -36,7 +36,7 @@ router.get('/:gameName', async (req, res) => {
         // Step 1: Get the leaderboard for the specific game
         const leaderboardResult = await db.query(
             `SELECT user_id, game_name, score, create_at 
-            FROM leaderboards 
+            FROM public.leaderboards 
             WHERE game_name = $1 
             ORDER BY score DESC 
             LIMIT 10`,
@@ -66,7 +66,7 @@ router.get('/:gameName', async (req, res) => {
         // Step 3: Get the usernames for the users in the leaderboard
         const usernamesResult = await db.query(
             `SELECT id, username 
-            FROM users 
+            FROM public.users 
             WHERE id = ANY($1)`,
             [userIds]
         );
@@ -83,8 +83,8 @@ router.get('/:gameName', async (req, res) => {
         // Step 4: Get the avatars for the users in the leaderboard
         const avatarsResult = await db.query(
             `SELECT ui.user_id, i.image_url AS avatar
-            FROM user_items ui
-            JOIN items i ON ui.item_id = i.id AND i.type = 'avatar'
+            FROM public.user_items ui
+            JOIN public.items i ON ui.item_id = i.id AND i.type = 'avatar'
             WHERE ui.user_id = ANY($1) AND ui.equipped = true`,
             [userIds]
         );
@@ -125,7 +125,7 @@ router.get('/:userId/:gameName', async (req, res) => {
 
     try {
         const result = await db.query(
-            `SELECT user_id, score, create_at FROM leaderboards WHERE user_id = $1 AND game_name = $2 ORDER BY score DESC`,
+            `SELECT user_id, score, create_at FROM public.leaderboards WHERE user_id = $1 AND game_name = $2 ORDER BY score DESC`,
             [parseInt(userId), gameName] // Convert userId to integer
         );
 
@@ -152,7 +152,7 @@ router.get('/stats/:userId/:gameName', async (req, res) => {
         // Fetch user's score history for the specified game
         const userScoresResult = await db.query(
             `SELECT DISTINCT ON (score, create_at) score, create_at
-                FROM leaderboards 
+                FROM public.leaderboards 
                 WHERE user_id = $1 AND game_name = $2
                 ORDER BY create_at ASC;
             `,
@@ -162,7 +162,7 @@ router.get('/stats/:userId/:gameName', async (req, res) => {
         // Fetch average scores per day for the same game
         const averageScoresResult = await db.query(
             `SELECT DATE(create_at) AS date, AVG(score)::FLOAT AS avg_score
-                FROM leaderboards 
+                FROM public.leaderboards 
                 WHERE game_name = $1 
                 GROUP BY DATE(create_at)
                 ORDER BY DATE(create_at) ASC
@@ -194,7 +194,7 @@ router.post('/:gameName', async (req, res) => {
     }
     try {
         await db.query(`
-            insert into leaderboards (user_id, game_name, score) values ($1, $2, $3)`,
+            insert into public.leaderboards (user_id, game_name, score) values ($1, $2, $3)`,
             [user_id, gameName, score]);
         res.status(200).json({ message: 'Leaaderboard entry added/updated successfully' });
     } catch (err) {

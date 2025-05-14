@@ -52,7 +52,7 @@ app.post('/createAccount', async (req, res) => {
   try {
     console.log('Inside try')
 
-    await db.none('INSERT INTO users(username, email, password) VALUES($1, $2, $3)', [username, email, password]);
+    await db.none('INSERT INTO public.users(username, email, password) VALUES($1, $2, $3)', [username, email, password]);
     res.json({ success: true });
     console.log('Success?')
 
@@ -70,7 +70,7 @@ app.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    const result = await db.oneOrNone('SELECT id, username, email FROM users WHERE username = $1 AND password = $2', [username, password]);
+    const result = await db.oneOrNone('SELECT id, username, email FROM public.users WHERE username = $1 AND password = $2', [username, password]);
 
     if (result) {
       res.json({ success: true, user: result });
@@ -106,7 +106,7 @@ app.get('/userData/:username', async (req, res) => {
   const { username } = req.params;
 
   try {
-    const result = await db.oneOrNone('SELECT id, username, email FROM users WHERE username = $1', [username]);
+    const result = await db.oneOrNone('SELECT id, username, email FROM users WHERE public.username = $1', [username]);
 
     if (result) {
       res.json({ success: true, user: result });
@@ -153,12 +153,12 @@ app.get('/get-word', async (req, res) => {
 app.get("/achievements/:user_id", async (req, res) => {
   const { user_id } = req.params;
   try {
-    let result = await db.oneOrNone("SELECT * FROM achievements WHERE user_id=$1", [user_id]);
+    let result = await db.oneOrNone("SELECT * FROM public.achievements WHERE user_id=$1", [user_id]);
 
     // If no record exists, insert a default row
     if (!result) {
       result = await db.one(
-        "INSERT INTO achievements (user_id, score, bronze, silver, gold) VALUES ($1, 0, 0, 0, 0) RETURNING *",
+        "INSERT INTO public.achievements (user_id, score, bronze, silver, gold) VALUES ($1, 0, 0, 0, 0) RETURNING *",
         [user_id]
       );
     }
@@ -174,18 +174,18 @@ app.get("/profile/equipped/:user_id", async (req, res) => {
   try {
     const query = `
       SELECT 
-        (SELECT i.image_url FROM user_items ui
-         JOIN items i ON ui.item_id = i.id
+        (SELECT i.image_url FROM public.user_items ui
+         JOIN public.items i ON ui.item_id = i.id
          WHERE ui.user_id = $1 AND ui.equipped = true AND i.type = 'background'
          LIMIT 1) AS background,
 
-        (SELECT i.image_url FROM user_items ui
-         JOIN items i ON ui.item_id = i.id
+        (SELECT i.image_url FROM public.user_items ui
+         JOIN public.items i ON ui.item_id = i.id
          WHERE ui.user_id = $1 AND ui.equipped = true AND i.type = 'avatar'
          LIMIT 1) AS avatar,
 
-        (SELECT i.style_class FROM user_items ui
-         JOIN items i ON ui.item_id = i.id
+        (SELECT i.style_class FROM public.user_items ui
+         JOIN public.items i ON ui.item_id = i.id
          WHERE ui.user_id = $1 AND ui.equipped = true AND i.type = 'card'
          LIMIT 1) AS card;
     `;
@@ -210,7 +210,7 @@ app.post("/profile/equip", async (req, res) => {
   try {
     //unequip previous item of the same type
     await db.none(`
-      update user_items
+      update public.user_items
       set equipped = false
       where user_id=$1
       and item_id in (
@@ -220,7 +220,7 @@ app.post("/profile/equip", async (req, res) => {
 
     //Equip the selected item
     await db.none(`
-      update user_items
+      update public.user_items
       set equipped = true
       where user_id=$1
       and item_id = $2`,
@@ -245,8 +245,8 @@ app.get("/profile/:type/:user_id", async (req, res) => {
   try {
     const result = await db.manyOrNone(
       `SELECT ui.equipped, i.*
-       FROM user_items ui
-       JOIN items i ON ui.item_id = i.id
+       FROM public.user_items ui
+       JOIN public.items i ON ui.item_id = i.id
        WHERE ui.user_id = $1 AND i.type = $2`,
       [user_id, type]
     );
@@ -263,7 +263,7 @@ app.post("/achievements/:user_id", async (req, res) => {
   const { user_id } = req.params;
   const { score, bronze, silver, gold } = req.body;
   try {
-    const result = await db.oneOrNone(`update achievements 
+    const result = await db.oneOrNone(`update public.achievements 
       set score = coalesce($1, score),
       bronze = coalesce($2, bronze),
       silver = coalesce($3, silver), 
@@ -286,8 +286,8 @@ app.get("/store/:user_id", async (req, res) => {
 
   try {
     const avilableItems = await db.any(
-      `select * from items
-      where id not in (select item_id from user_items where user_id=$1)`,
+      `select * from public.items
+      where id not in (select item_id from public.user_items where user_id=$1)`,
       [user_id]
     );
     res.json(avilableItems);
@@ -300,7 +300,7 @@ app.get("/store/:user_id", async (req, res) => {
 app.get("/allstore", async (req, res) => {
   try {
     const avilableItems = await db.any(
-      `select * from items`
+      `select * from public.items`
     );
     res.json(avilableItems);
   } catch (error) {
@@ -318,7 +318,7 @@ app.post("/store/:user_id", async (req, res) => {
     await db.tx(async (t) => {
       // Get the user's current gold, silver, and bronze from the achievements table
       const userAchievements = await t.oneOrNone(
-        `SELECT gold, silver, bronze FROM achievements WHERE user_id = $1`,
+        `SELECT gold, silver, bronze FROM public.achievements WHERE user_id = $1`,
         [user_id]
       );
 
@@ -329,7 +329,7 @@ app.post("/store/:user_id", async (req, res) => {
 
       // Get the item's price details (gold, silver, bronze)
       const item = await t.oneOrNone(
-        `SELECT price_gold, price_silver, price_bronze FROM items WHERE id = $1`,
+        `SELECT price_gold, price_silver, price_bronze FROM public.items WHERE id = $1`,
         [item_id]
       );
 
@@ -351,26 +351,26 @@ app.post("/store/:user_id", async (req, res) => {
       // Deduct the currency from the achievements table based on the item's price type
       if (item.price_gold > 0) {
         await t.none(
-          `UPDATE achievements SET gold = gold - $1 WHERE user_id = $2`,
+          `UPDATE public.achievements SET gold = gold - $1 WHERE user_id = $2`,
           [item.price_gold, user_id]
         );
       }
       if (item.price_silver > 0) {
         await t.none(
-          `UPDATE achievements SET silver = silver - $1 WHERE user_id = $2`,
+          `UPDATE public.achievements SET silver = silver - $1 WHERE user_id = $2`,
           [item.price_silver, user_id]
         );
       }
       if (item.price_bronze > 0) {
         await t.none(
-          `UPDATE achievements SET bronze = bronze - $1 WHERE user_id = $2`,
+          `UPDATE public.achievements SET bronze = bronze - $1 WHERE user_id = $2`,
           [item.price_bronze, user_id]
         );
       }
 
       // Insert the item into the user's items table (set equipped to false)
       await t.none(
-        `INSERT INTO user_items (user_id, item_id, equipped)
+        `INSERT INTO public.user_items (user_id, item_id, equipped)
          VALUES ($1, $2, false)`,
         [user_id, item_id]
       );

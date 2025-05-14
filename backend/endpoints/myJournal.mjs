@@ -13,7 +13,7 @@ router.post('/addEntry', async (req,res) => {
 
     try{
         const query = `
-        insert into user_journal_entries (user_id, entry_date, mood, energy, focus,notes)
+        insert into public.user_journal_entries (user_id, entry_date, mood, energy, focus,notes)
         values ($1, $2, $3, $4, $5, $6)
         on conflict (user_id, entry_date)
         do update set mood=$3, energy=$4, focus=$5, notes = $6
@@ -34,7 +34,7 @@ router.get('/entries/:userId', async(req,res) => {
     try{
         const result = await db.query(
             `select entry_date, mood, energy, focus, notes
-            from user_journal_entries where user_id=$1
+            from public.user_journal_entries where user_id=$1
             order by entry_date desc`,
             [userId]
         )

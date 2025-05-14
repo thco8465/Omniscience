@@ -25,7 +25,7 @@ async function getDailyChallenge(req, res) {
   try {
     // Check if today's challenge already exists
     const existing = await db.query(
-      'SELECT * FROM daily_challenges WHERE date = $1',
+      'SELECT * FROM public.daily_challenges WHERE date = $1',
       [today]
     );
     console.log(existing[0])
@@ -41,7 +41,7 @@ async function getDailyChallenge(req, res) {
 
     // Insert into daily_challenges
     const insert = await db.query(
-      `INSERT INTO daily_challenges (date, game, variation, goal, reward)
+      `INSERT INTO public.daily_challenges (date, game, variation, goal, reward)
        VALUES ($1, $2, $3, $4, $5) RETURNING *`,
       [today, game, variation.name, variation.description, 1] // reward is static for now
     );
@@ -62,7 +62,7 @@ async function completeChallenge(req, res) {
 
   try {
     await db.query(
-      `INSERT INTO user_challenge_log (user_id, date, completed)
+      `INSERT INTO public.user_challenge_log (user_id, date, completed)
        VALUES ($1, $2, true)
        ON CONFLICT (user_id, date) DO UPDATE SET completed = true`,
       [userId, today]
@@ -82,7 +82,7 @@ async function getChallengeStatus(req, res) {
 
   try {
     const logs = await db.query(
-      `SELECT date, completed FROM user_challenge_log
+      `SELECT date, completed FROM public.user_challenge_log
        WHERE user_id = $1
        ORDER BY date DESC`,
       [userId]
