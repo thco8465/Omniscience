@@ -20,9 +20,9 @@ const db = pgp(process.env.DATABASE_URL ? {
 });
 
 // Simpler approach - directly use the manyOrNone method
-db.query = async function(text, params) {
-  return this.manyOrNone(text, params);
-};
+// db.query = async function(text, params) {
+//   return this.manyOrNone(text, params);
+// };
 
 // Create users table
 db.none(`
