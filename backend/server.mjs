@@ -39,6 +39,10 @@ initializeWordle(ioInstance)
 
 app.options('/createAccount', cors());  // Handle pre-flight for createAccount endpoint
 
+app.get('/ping', (req,res) => {
+  res.status(200).send('pong');
+});
+
 // Endpoint for account creation
 app.post('/createAccount', async (req, res) => {
   console.log('Inside create account endpoint')

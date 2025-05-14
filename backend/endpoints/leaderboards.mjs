@@ -4,55 +4,6 @@ import db from '../Database/db.mjs'
 
 const router = express.Router();
 
-
-// Get leaderboard for a specific game
-// router.get('/:gameName', async (req, res) => {
-//     const { gameName } = req.params;
-//     try {
-//         // const result = await db.query(
-//         //     `SELECT user_id, game_name, score, create_at FROM leaderboards WHERE game_name = $1 ORDER BY score DESC LIMIT 10`,
-//         //     [gameName]
-//         // );
-//         const result = await db.query(
-//             `SELECT 
-//                 lb.user_id, 
-//                 lb.game_name, 
-//                 lb.score, 
-//                 lb.create_at, 
-//                 u.username, 
-//                 i.image_url AS avatar
-//             FROM leaderboards lb
-//             LEFT JOIN users u ON lb.user_id = u.id
-//             LEFT JOIN user_items ui ON u.id = ui.user_id
-//             LEFT JOIN items i ON ui.item_id = i.id AND i.type = 'avatar'
-//             WHERE lb.game_name = $1 AND ui.equipped = true
-//             ORDER BY lb.score DESC
-//             LIMIT 10`,
-//             [gameName]
-//         );
-//         console.log(result)
-//         // Check if result is an array or has rows
-//         const leaderboardData = Array.isArray(result) ? result : result.rows;
-
-//         if (!leaderboardData || leaderboardData.length === 0) {
-//             // Return default message if no leaderboard data exists
-//             return res.json([{
-//                 user_id: null,
-//                 game_name: gameName,
-//                 score: 0,
-//                 create_at: new Date(),
-//                 username: null,
-//                 avatar: null,
-//                 message: 'No leaders for this game yet'
-//             }]);
-//         }
-
-//         res.json(leaderboardData);
-//     } catch (err) {
-//         console.error('Error fetching leaderboards:', err);
-//         res.status(500).json({ error: 'Internal Server Error' });
-//     }
-// });
 router.get('/getUserIdByUsername', async (req, res) => {
     console.log('Route /getUserIdByUsername was called');
 
