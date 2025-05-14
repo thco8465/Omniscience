@@ -21,7 +21,7 @@ const db = pgp(process.env.DATABASE_URL ? {
 
 // Create users table
 db.none(`
-  CREATE TABLE IF NOT EXISTS users (
+  CREATE TABLE IF NOT EXISTS public.users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(255) UNIQUE NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
