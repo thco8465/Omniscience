@@ -19,6 +19,10 @@ const db = pgp(process.env.DATABASE_URL ? {
   password: process.env.DB_PASSWORD || 'ArkhamknightN7?'
 });
 
+db.query = async function(text, params) {
+  return this.any(text, params);
+};
+
 // Create users table
 db.none(`
   CREATE TABLE IF NOT EXISTS public.users (
