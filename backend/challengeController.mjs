@@ -92,8 +92,9 @@ async function getChallengeStatus(req, res) {
     let currentDate = new Date(today);
     const completedDates = new Set(logs.filter(r => r.completed).map(r => r.date.toISOString().split('T')[0]));
     console.log('completedDates: ', completedDates)
-    // Count consecutive days
-    while (completedDates.has(currentDate.toISOString().split('T')[0])) {
+    // Count consecutive days with a maximum limit to prevent infinite loops
+    const MAX_STREAK_DAYS = 365; // Reasonable upper limit for a streak
+    while (streak < MAX_STREAK_DAYS && completedDates.has(currentDate.toISOString().split('T')[0])) {
       streak++;
       currentDate.setDate(currentDate.getDate() - 1);
     }
