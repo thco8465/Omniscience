@@ -30,7 +30,11 @@ router.post('/addEntry', async (req,res) => {
 //Get all journal entries for a user
 router.get('/entries/:userId', async(req,res) => {
     const {userId} = req.params
-    
+
+    if (!userId) {
+        return res.status(400).json({error: 'User ID is required'})
+    }
+
     try{
         const result = await db.query(
             `select entry_date, mood, energy, focus, notes
@@ -38,10 +42,16 @@ router.get('/entries/:userId', async(req,res) => {
             order by entry_date desc`,
             [userId]
         )
-        console.log(result)
-        res.status(200).json(result)
+
+        // Validate result structure before sending response
+        if (!result || typeof result !== 'object') {
+            throw new Error('Unexpected database response format')
+        }
+
+        // Send only the rows array if available, otherwise send an empty array
+        res.status(200).json(result.rows || [])
     }catch(error){
-        console.error('Error fetching journal entries', error)
+        console.error('Error fetching journal entries:', error.message)
         res.status(500).json({error: 'Failed to retrieve journal entries'})
     }
 })
